@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SF Arabic Light - للنصوص الخفيفة */
+@font-face {
+  font-family: 'SF Arabic';
+  src: url('/fonts/SF-Arabic-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SF Arabic Regular - للنصوص العادية */
+@font-face {
+  font-family: 'SF Arabic';
+  src: url('/fonts/SF-Arabic-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SF Arabic Regular - للنصوص المتوسطة */
+@font-face {
+  font-family: 'SF Arabic';
+  src: url('/fonts/SF-Arabic-Regular.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SF Arabic Regular - لـ font-semibold */
+@font-face {
+  font-family: 'SF Arabic';
+  src: url('/fonts/SF-Arabic-Regular.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SF Arabic Bold - للعناوين والنصوص السميكة */
+@font-face {
+  font-family: 'SF Arabic';
+  src: url('/fonts/SF-Arabic-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  * {
+    font-family: 'SF Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+  }
+}
+
+/* Font-size range slider */
+.font-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+}
+.font-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #B21063;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px #B21063, 0 2px 8px rgba(178, 16, 99, 0.35);
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.font-range::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgba(178, 16, 99, 0.18), 0 2px 10px rgba(178, 16, 99, 0.45);
+}
+.font-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #B21063;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px #B21063;
+  cursor: grab;
+}
+.font-range::-moz-range-track {
+  height: 6px;
+  border-radius: 99px;
+  background: #e5e7eb;
+}
+.font-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 99px;
+  background: #B21063;
+}
+.font-range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 5px rgba(178, 16, 99, 0.18), 0 2px 10px rgba(178, 16, 99, 0.4);
+}
+
+/* ── Spinner loader ── */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  -webkit-mask: conic-gradient(from 15deg, #0000, #000);
+  mask: conic-gradient(from 15deg, #0000, #000);
+  animation: l26 1s infinite steps(12);
+}
+.loader,
+.loader:before,
+.loader:after {
+  background:
+    radial-gradient(closest-side at 50% 12.5%, #f03355 96%, #0000) 50% 0/20% 80% repeat-y,
+    radial-gradient(closest-side at 12.5% 50%, #f03355 96%, #0000) 0 50%/80% 20% repeat-x;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  grid-area: 1/1;
+  transform: rotate(30deg);
+}
+.loader:after {
+  transform: rotate(60deg);
+}
+@keyframes l26 {
+  100% { transform: rotate(1turn); }
+}

@@ -1,0 +1,638 @@
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { Download, Printer, CalendarDays, Clock, Building2, User as User2, TrendingUp, AlertTriangle, CheckCircle2, Search, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+
+function useCountUp(target: number, duration = 900) {
+  const [current, setCurrent] = useState(0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    startRef.current = null;
+    const from = 0;
+    const step = (ts: number) => {
+      if (!startRef.current) startRef.current = ts;
+      const progress = Math.min((ts - startRef.current) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCurrent(from + (target - from) * eased);
+      if (progress < 1) rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return current;
+}
+
+type DayStatus = "complete" | "late" | "absent" | "partial";
+
+type AttendanceRow = {
+  id: string;
+  weekday: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  totalHours: number;
+  workingHours: number;
+  delayHours: number;
+  overtimeHours: number;
+  notes?: string;
+  auditRate?: number;
+};
+
+const demoEmployee = {
+  employeeId: "000045655",
+  name: "أحمد عبدالقادر أحمد محي الدين",
+  department: "الإدارة وإدارة تقنية المعلومات",
+  from: "21/08/2025",
+  to: "20/09/2025",
+};
+
+const demoData: AttendanceRow[] = [
+  { id: "1", weekday: "الخميس", date: "21/08/2025", checkIn: "09:59:00", checkOut: "18:08:00", totalHours: 8.15, workingHours: 7.02, delayHours: 0, overtimeHours: 0, notes: "—" },
+  { id: "2", weekday: "الجمعة", date: "22/08/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "3", weekday: "السبت", date: "23/08/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "إجازة" },
+  { id: "4", weekday: "الأحد", date: "24/08/2025", checkIn: "11:29:00", checkOut: "17:51:00", totalHours: 6.37, workingHours: 5.37, delayHours: 1.63, overtimeHours: 0, notes: "تأخير" },
+  { id: "5", weekday: "الإثنين", date: "25/08/2025", checkIn: "10:40:00", checkOut: "17:40:00", totalHours: 6.60, workingHours: 6.55, delayHours: 1.40, overtimeHours: 0, notes: "تأخير" },
+  { id: "6", weekday: "الثلاثاء", date: "26/08/2025", checkIn: "08:48:00", checkOut: "16:52:00", totalHours: 7.70, workingHours: 7.05, delayHours: 0.30, overtimeHours: 0.65 },
+  { id: "7", weekday: "الأربعاء", date: "27/08/2025", checkIn: "09:43:00", checkOut: "16:42:00", totalHours: 6.98, workingHours: 5.98, delayHours: 1.02, overtimeHours: 0, notes: "تأخير" },
+  { id: "8", weekday: "الخميس", date: "28/08/2025", checkIn: "10:45:00", checkOut: "16:57:00", totalHours: 5.97, workingHours: 5.97, delayHours: 1.03, overtimeHours: 0, notes: "نصف دوام" },
+  { id: "9", weekday: "الأحد", date: "31/08/2025", checkIn: "09:30:00", checkOut: "13:00:00", totalHours: 3.50, workingHours: 3.50, delayHours: 0, overtimeHours: 0, notes: "انصراف مبكر" },
+  { id: "10", weekday: "الإثنين", date: "01/09/2025", checkIn: "09:56:00", checkOut: "16:30:00", totalHours: 6.93, workingHours: 5.94, delayHours: 1.07, overtimeHours: 0, notes: "تأخير" },
+  { id: "11", weekday: "الثلاثاء", date: "02/09/2025", checkIn: "10:36:00", checkOut: "16:52:00", totalHours: 6.77, workingHours: 6.77, delayHours: 0.23, overtimeHours: 0, notes: "تأخير بسيط" },
+  { id: "12", weekday: "الأربعاء", date: "03/09/2025", checkIn: "12:13:00", checkOut: "18:12:00", totalHours: 5.98, workingHours: 5.98, delayHours: 3.22, overtimeHours: 0 },
+  { id: "13", weekday: "الخميس", date: "04/09/2025", checkIn: "10:30:00", checkOut: "18:17:00", totalHours: 7.78, workingHours: 6.50, delayHours: 1.50, overtimeHours: 1.00, notes: "تأخير + ساعة إضافية" },
+  { id: "14", weekday: "الجمعة", date: "05/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "15", weekday: "السبت", date: "06/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "16", weekday: "الأحد", date: "07/09/2025", checkIn: "10:03:00", checkOut: "17:24:00", totalHours: 7.35, workingHours: 6.35, delayHours: 0.65, overtimeHours: 1.00 },
+  { id: "17", weekday: "الإثنين", date: "08/09/2025", checkIn: "10:27:00", checkOut: "17:55:00", totalHours: 7.55, workingHours: 6.55, delayHours: 0.45, overtimeHours: 1.00 },
+  { id: "18", weekday: "الثلاثاء", date: "09/09/2025", checkIn: "10:18:00", checkOut: "17:40:00", totalHours: 7.30, workingHours: 6.70, delayHours: 0.30, overtimeHours: 1.00 },
+  { id: "19", weekday: "الأربعاء", date: "10/09/2025", checkIn: "10:40:00", checkOut: "17:16:00", totalHours: 6.70, workingHours: 6.03, delayHours: 1.30, overtimeHours: 1.00 },
+  { id: "20", weekday: "الخميس", date: "11/09/2025", checkIn: "10:58:00", checkOut: "17:15:00", totalHours: 7.03, workingHours: 6.03, delayHours: 1.97, overtimeHours: 0 },
+  { id: "21", weekday: "الجمعة", date: "12/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "22", weekday: "السبت", date: "13/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "23", weekday: "الأحد", date: "14/09/2025", checkIn: "10:08:00", checkOut: "16:55:00", totalHours: 6.78, workingHours: 5.79, delayHours: 1.22, overtimeHours: 0.99 },
+  { id: "24", weekday: "الإثنين", date: "15/09/2025", checkIn: "11:01:00", checkOut: "17:15:00", totalHours: 6.23, workingHours: 5.52, delayHours: 1.00, overtimeHours: 0 },
+  { id: "25", weekday: "الثلاثاء", date: "16/09/2025", checkIn: "10:29:00", checkOut: "16:55:00", totalHours: 6.77, workingHours: 6.77, delayHours: 0.23, overtimeHours: 0 },
+  { id: "26", weekday: "الأربعاء", date: "17/09/2025", checkIn: "10:30:00", checkOut: "17:00:00", totalHours: 6.50, workingHours: 5.85, delayHours: 1.15, overtimeHours: 0 },
+  { id: "27", weekday: "الخميس", date: "18/09/2025", checkIn: "10:29:00", checkOut: "17:20:00", totalHours: 6.85, workingHours: 5.85, delayHours: 1.15, overtimeHours: 0 },
+  { id: "28", weekday: "الجمعة", date: "19/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+  { id: "29", weekday: "السبت", date: "20/09/2025", totalHours: 0, workingHours: 0, delayHours: 0, overtimeHours: 0, notes: "عطلة" },
+];
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+
+function getAuditRate(id: string): number | undefined {
+  // Only assign audit rates to working days (not holidays/leaves)
+  const seed = parseInt(id, 10);
+  const rate = 30 + Math.round(seededRandom(seed) * 70);
+  return rate;
+}
+
+function formatHours(n: number) {
+  return n.toFixed(2);
+}
+
+function statusOf(row: AttendanceRow): DayStatus {
+  if (row.totalHours === 0) return "absent";
+  if (row.delayHours >= 1.0) return "late";
+  if (row.totalHours < 6.5) return "partial";
+  return "complete";
+}
+
+function statusBadge(status: DayStatus) {
+  switch (status) {
+    case "complete":
+      return (
+        <Badge className="rounded-full" variant="secondary">
+          <CheckCircle2 className="ml-1 h-4 w-4" /> يوم مكتمل
+        </Badge>
+      );
+    case "late":
+      return (
+        <Badge className="rounded-full bg-amber-100 text-amber-900 hover:bg-amber-100">
+          <AlertTriangle className="ml-1 h-4 w-4" /> تأخير
+        </Badge>
+      );
+    case "absent":
+      return (
+        <Badge className="rounded-full bg-rose-100 text-rose-900 hover:bg-rose-100">
+          غياب / عطلة
+        </Badge>
+      );
+    case "partial":
+      return (
+        <Badge className="rounded-full bg-blue-100 text-blue-900 hover:bg-blue-100">
+          دوام جزئي
+        </Badge>
+      );
+  }
+}
+
+function exportToCSV(rows: AttendanceRow[], filename = "attendance.csv") {
+  const headers = [
+    "اليوم",
+    "التاريخ",
+    "الدخول",
+    "الخروج",
+    "عدد الساعات",
+    "ساعات العمل",
+    "التأخير",
+    "الإضافي",
+    "الحالة",
+    "ملاحظات",
+  ];
+  const lines = rows.map((r) => [
+    r.weekday,
+    r.date,
+    r.checkIn ?? "—",
+    r.checkOut ?? "—",
+    formatHours(r.totalHours),
+    formatHours(r.workingHours),
+    formatHours(r.delayHours),
+    formatHours(r.overtimeHours),
+    statusOf(r),
+    r.notes ?? "",
+  ]);
+  const csv = [headers, ...lines].map((arr) => arr.join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function InfoBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <Label className="text-sm text-muted-foreground">{label}</Label>
+      <div className="mt-1 rounded-2xl border bg-white/60 backdrop-blur supports-[backdrop-filter]:bg-white/50 px-3 py-2 text-sm shadow-sm">{value}</div>
+    </div>
+  );
+}
+
+function AlertCard({ title, description, tone = "info" as "info" | "warn" | "ok" }) {
+  const toneClasses = {
+    info: "from-sky-50 to-white text-sky-900 border-sky-100",
+    warn: "from-amber-50 to-white text-amber-900 border-amber-100",
+    ok: "from-emerald-50 to-white text-emerald-900 border-emerald-100",
+  } as const;
+  return (
+    <div className={cn("rounded-2xl border bg-gradient-to-b p-4 shadow-sm", toneClasses[tone])}>
+      <div className="flex items-start gap-2">
+        {tone === "warn" ? (
+          <AlertTriangle className="h-4 w-4" />
+        ) : tone === "ok" ? (
+          <CheckCircle2 className="h-4 w-4" />
+        ) : (
+          <Info className="h-4 w-4" />
+        )}
+        <div>
+          <div className="font-medium">{title}</div>
+          <div className="text-sm/6 opacity-90">{description}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function toneClasses(tone: "sky" | "rose" | "violet" | "emerald" | "amber") {
+  const map = {
+    sky: {
+      card: "bg-gradient-to-b from-sky-50/80 to-white border-sky-100",
+      iconWrap: "bg-sky-100/60 text-sky-700 border-sky-200",
+    },
+    rose: {
+      card: "bg-gradient-to-b from-rose-50/80 to-white border-rose-100",
+      iconWrap: "bg-rose-100/60 text-rose-700 border-rose-200",
+    },
+    violet: {
+      card: "bg-gradient-to-b from-violet-50/80 to-white border-violet-100",
+      iconWrap: "bg-violet-100/60 text-violet-700 border-violet-200",
+    },
+    emerald: {
+      card: "bg-gradient-to-b from-emerald-50/80 to-white border-emerald-100",
+      iconWrap: "bg-emerald-100/60 text-emerald-700 border-emerald-200",
+    },
+    amber: {
+      card: "bg-gradient-to-b from-amber-50/80 to-white border-amber-100",
+      iconWrap: "bg-amber-100/60 text-amber-700 border-amber-200",
+    },
+  } as const;
+  return map[tone];
+}
+
+function AuditRateBadge({ rate }: { rate: number }) {
+  const color =
+    rate >= 80
+      ? "bg-emerald-100 text-emerald-800"
+      : rate >= 60
+      ? "bg-sky-100 text-sky-800"
+      : rate >= 45
+      ? "bg-amber-100 text-amber-800"
+      : "bg-rose-100 text-rose-800";
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums", color)}>
+      {rate}%
+    </span>
+  );
+}
+
+function parseStatValue(value: string): { num: number; suffix: string } {
+  const match = value.match(/^([\d.]+)\s*(.*)$/);
+  if (!match) return { num: 0, suffix: value };
+  return { num: parseFloat(match[1]), suffix: match[2] ? " " + match[2].trim() : "" };
+}
+
+function StatCard({ title, value, icon: Icon, hint, tone = "sky" as "sky" | "rose" | "violet" | "emerald" | "amber" }) {
+  const t = toneClasses(tone);
+  const { num, suffix } = parseStatValue(value);
+  const animated = useCountUp(num);
+  const displayValue = Number.isInteger(num)
+    ? `${Math.round(animated)}${suffix}`
+    : `${animated.toFixed(2)}${suffix}`;
+
+  return (
+    <Card className={cn("rounded-2xl border shadow-sm transition-all duration-200 hover:shadow-md", t.card)}>
+      <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className={cn("grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl border", t.iconWrap)}>
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </div>
+            <CardTitle className="text-xs sm:text-sm font-medium leading-tight">{title}</CardTitle>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="text-lg sm:text-2xl font-bold tabular-nums">{displayValue}</div>
+        {hint && (
+          <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+            <Info className="h-3.5 w-3.5" />
+            {hint}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function AttendanceDashboard() {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const rows = useMemo(() => {
+    return demoData.filter((r) => {
+      const q = query.trim();
+      const matchesQuery = q
+        ? [r.weekday, r.date, r.checkIn ?? "", r.checkOut ?? "", r.notes ?? ""].some((x) => x.includes(q))
+        : true;
+      const s = statusOf(r);
+      const matchesStatus = statusFilter === "all" ? true : s === (statusFilter as DayStatus);
+      return matchesQuery && matchesStatus;
+    });
+  }, [query, statusFilter]);
+
+  const totals = useMemo(() => {
+    const sum = (k: keyof AttendanceRow) => rows.reduce((acc, r) => acc + (Number(r[k]) || 0), 0);
+    return {
+      totalHours: sum("totalHours"),
+      workingHours: sum("workingHours"),
+      delayHours: sum("delayHours"),
+      overtimeHours: sum("overtimeHours"),
+      days: rows.length,
+      absentDays: rows.filter((r) => statusOf(r) === "absent").length,
+    };
+  }, [rows]);
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-[radial-gradient(40%_40%_at_100%_0%,#eef2ff_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,#fff1f2_0%,transparent_60%)]">
+      <div className="mx-auto max-w-[1400px] p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <Card className="rounded-2xl border bg-gradient-to-b from-sky-50/70 to-white shadow-sm">
+              <CardHeader className="pb-3 px-4 sm:px-6">
+                <CardTitle className="text-lg sm:text-xl">سجل الحضور والانصراف</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-5 px-4 sm:px-6">
+                <div className="flex items-center gap-2 text-xs sm:text-sm"><User2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" /><span className="text-muted-foreground">الاسم:</span><span className="font-medium truncate">{demoEmployee.name}</span></div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm"><Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" /><span className="text-muted-foreground">القسم:</span><span className="font-medium truncate">{demoEmployee.department}</span></div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm"><Badge className="rounded-full bg-white/60 backdrop-blur border border-slate-200 text-slate-700 text-xs">الرقم الوظيفي: {demoEmployee.employeeId}</Badge></div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm"><CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" /><span className="text-muted-foreground">من:</span><span className="font-medium">{demoEmployee.from}</span></div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm"><CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" /><span className="text-muted-foreground">إلى:</span><span className="font-medium">{demoEmployee.to}</span></div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+            <StatCard title="إجمالي ساعات الدوام" value={`${formatHours(totals.totalHours)} ساعة`} icon={Clock} tone="sky" />
+            <StatCard title="ساعات العمل الفعلية" value={`${formatHours(totals.workingHours)} ساعة`} icon={TrendingUp} tone="emerald" />
+            <StatCard title="ساعات التأخير" value={`${formatHours(totals.delayHours)} ساعة`} icon={AlertTriangle} tone="amber" />
+            <StatCard title="الساعات الإضافية" value={`${formatHours(totals.overtimeHours)} ساعة`} icon={CalendarDays} tone="violet" />
+            <StatCard title="أيام الغياب" value={`${totals.absentDays} يوم`} icon={CalendarDays} tone="rose" />
+          </motion.div>
+        </div>
+
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1 sm:flex-initial">
+              <Search className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="ابحث بالتاريخ، اليوم، الملاحظة…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-8 w-full sm:w-64 rounded-2xl text-sm"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-44 rounded-2xl text-sm">
+                <SelectValue placeholder="حالة اليوم" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl">
+                <SelectItem value="all">كل الحالات</SelectItem>
+                <SelectItem value="complete">يوم مكتمل</SelectItem>
+                <SelectItem value="late">تأخير</SelectItem>
+                <SelectItem value="partial">دوام جزئي</SelectItem>
+                <SelectItem value="absent">غياب/عطلة</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => window.print()} className="gap-2 rounded-2xl flex-1 sm:flex-initial text-sm">
+              <Printer className="h-4 w-4" /> <span className="hidden sm:inline">طباعة</span>
+            </Button>
+            <Button onClick={() => exportToCSV(rows)} className="gap-2 rounded-2xl flex-1 sm:flex-initial text-sm">
+              <Download className="h-4 w-4" /> <span className="hidden sm:inline">تصدير CSV</span>
+            </Button>
+          </div>
+        </div>
+
+        <Card className="rounded-2xl border bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+          <CardContent className="p-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block w-full overflow-x-auto">
+              <table className="w-full min-w-[900px] text-sm">
+                <thead className="sticky top-0 bg-gradient-to-b from-slate-50/70 to-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+                  <tr className="text-right">
+                    <th className="px-4 py-3 font-medium text-right">اليوم</th>
+                    <th className="px-4 py-3 font-medium text-right">التاريخ</th>
+                    <th className="px-4 py-3 font-medium text-right">الدخول</th>
+                    <th className="px-4 py-3 font-medium text-right">الخروج</th>
+                    <th className="px-4 py-3 font-medium text-right">عدد الساعات</th>
+                    <th className="px-4 py-3 font-medium text-right">ساعات العمل</th>
+                    <th className="px-4 py-3 font-medium text-right">التأخير</th>
+                    <th className="px-4 py-3 font-medium text-right">الإضافي</th>
+                    <th className="px-4 py-3 font-medium text-right">نسبة التحقيق</th>
+                    <th className="px-4 py-3 font-medium text-right">الحالة</th>
+                    <th className="px-4 py-3 font-medium text-right">تفاصيل</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, idx) => {
+                    const status = statusOf(r);
+                    const isHoliday = !!(r.notes && (r.notes.includes("عطلة") || r.notes.includes("إجازة")));
+                    const auditRate = isHoliday ? null : getAuditRate(r.id);
+                    return (
+                      <tr
+                        key={r.id}
+                        className={cn(
+                          "border-t",
+                          isHoliday
+                            ? "bg-gradient-to-r from-violet-50 to-white"
+                            : idx % 2 === 0
+                            ? "bg-background"
+                            : "bg-muted/10"
+                        )}
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">{r.weekday}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{r.date}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{r.checkIn ?? "—"}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{r.checkOut ?? "—"}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{formatHours(r.totalHours)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{formatHours(r.workingHours)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{formatHours(r.delayHours)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap tabular-nums">{formatHours(r.overtimeHours)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {auditRate !== null ? (
+                            <AuditRateBadge rate={auditRate!} />
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {isHoliday ? (
+                            <Badge className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-100">إجازة</Badge>
+                          ) : (
+                            statusBadge(status)
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button variant="outline" size="sm" className="rounded-xl">عرض</Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-full sm:max-w-xl">
+                              <SheetHeader>
+                                <SheetTitle>تفاصيل اليوم — {r.weekday} {r.date}</SheetTitle>
+                                <SheetDescription>بيانات الحضور والانصراف لهذا اليوم.</SheetDescription>
+                              </SheetHeader>
+                              <div className="mt-6 grid grid-cols-2 gap-4">
+                                <InfoBlock label="الدخول" value={r.checkIn ?? "—"} />
+                                <InfoBlock label="الخروج" value={r.checkOut ?? "—"} />
+                                <InfoBlock label="عدد الساعات" value={`${formatHours(r.totalHours)} ساعة`} />
+                                <InfoBlock label="ساعات العمل" value={`${formatHours(r.workingHours)} ساعة`} />
+                                <InfoBlock label="التأخير" value={`${formatHours(r.delayHours)} ساعة`} />
+                                <InfoBlock label="الإضافي" value={`${formatHours(r.overtimeHours)} ساعة`} />
+                                {auditRate !== null && (
+                                  <div className="col-span-2">
+                                    <Label className="text-sm text-muted-foreground">نسبة التحقيق</Label>
+                                    <div className="mt-2 flex items-center gap-3">
+                                      <AuditRateBadge rate={auditRate!} />
+                                      <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                        <div
+                                          className={cn("h-full rounded-full transition-all", auditRate! >= 80 ? "bg-emerald-500" : auditRate! >= 60 ? "bg-sky-500" : auditRate! >= 45 ? "bg-amber-500" : "bg-rose-500")}
+                                          style={{ width: `${auditRate}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="col-span-2">
+                                  <Label className="text-sm text-muted-foreground">الحالة</Label>
+                                  <div className="mt-2">{isHoliday ? (<Badge className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-100">إجازة</Badge>) : statusBadge(status)}</div>
+                                </div>
+                                {r.notes && (
+                                  <div className="col-span-2">
+                                    <Label className="text-sm text-muted-foreground">ملاحظات</Label>
+                                    <p className="mt-1 text-sm">{r.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </SheetContent>
+                          </Sheet>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t bg-gradient-to-r from-slate-50 to-white">
+                    <td className="px-4 py-3 font-medium" colSpan={4}>الإجماليات</td>
+                    <td className="px-4 py-3 tabular-nums font-semibold">{formatHours(totals.totalHours)}</td>
+                    <td className="px-4 py-3 tabular-nums font-semibold">{formatHours(totals.workingHours)}</td>
+                    <td className="px-4 py-3 tabular-nums font-semibold">{formatHours(totals.delayHours)}</td>
+                    <td className="px-4 py-3 tabular-nums font-semibold">{formatHours(totals.overtimeHours)}</td>
+                    <td className="px-4 py-3" colSpan={3}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-neutral-200">
+              {rows.map((r) => {
+                const status = statusOf(r);
+                const isHoliday = !!(r.notes && (r.notes.includes("عطلة") || r.notes.includes("إجازة")));
+                const auditRate = isHoliday ? null : getAuditRate(r.id);
+                return (
+                  <div key={r.id} className={cn("p-4", isHoliday && "bg-gradient-to-r from-slate-50 to-white")}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="font-semibold text-base mb-1">{r.weekday}</div>
+                        <div className="text-sm text-muted-foreground tabular-nums">{r.date}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {auditRate !== null && <AuditRateBadge rate={auditRate} />}
+                        {isHoliday ? (
+                          <Badge className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-100 text-xs">إجازة</Badge>
+                        ) : (
+                          statusBadge(status)
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                      <div>
+                        <div className="text-muted-foreground text-xs mb-1">الدخول</div>
+                        <div className="font-medium tabular-nums">{r.checkIn ?? "—"}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs mb-1">الخروج</div>
+                        <div className="font-medium tabular-nums">{r.checkOut ?? "—"}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs mb-1">عدد الساعات</div>
+                        <div className="font-medium tabular-nums">{formatHours(r.totalHours)}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs mb-1">ساعات العمل</div>
+                        <div className="font-medium tabular-nums">{formatHours(r.workingHours)}</div>
+                      </div>
+                    </div>
+
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-full rounded-xl text-xs">
+                          عرض التفاصيل الكاملة
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-full sm:max-w-xl">
+                        <SheetHeader>
+                          <SheetTitle>تفاصيل اليوم — {r.weekday} {r.date}</SheetTitle>
+                          <SheetDescription>بيانات الحضور والانصراف لهذا اليوم.</SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6 grid grid-cols-2 gap-4">
+                          <InfoBlock label="الدخول" value={r.checkIn ?? "—"} />
+                          <InfoBlock label="الخروج" value={r.checkOut ?? "—"} />
+                          <InfoBlock label="عدد الساعات" value={`${formatHours(r.totalHours)} ساعة`} />
+                          <InfoBlock label="ساعات العمل" value={`${formatHours(r.workingHours)} ساعة`} />
+                          <InfoBlock label="التأخير" value={`${formatHours(r.delayHours)} ساعة`} />
+                          <InfoBlock label="الإضافي" value={`${formatHours(r.overtimeHours)} ساعة`} />
+                          {auditRate !== null && (
+                            <div className="col-span-2">
+                              <Label className="text-sm text-muted-foreground">نسبة التحقيق</Label>
+                              <div className="mt-2 flex items-center gap-3">
+                                <AuditRateBadge rate={auditRate} />
+                                <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                  <div
+                                    className={cn("h-full rounded-full transition-all", auditRate >= 80 ? "bg-emerald-500" : auditRate >= 60 ? "bg-sky-500" : auditRate >= 45 ? "bg-amber-500" : "bg-rose-500")}
+                                    style={{ width: `${auditRate}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="col-span-2">
+                            <Label className="text-sm text-muted-foreground">الحالة</Label>
+                            <div className="mt-2">{isHoliday ? (<Badge className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-100">إجازة</Badge>) : statusBadge(status)}</div>
+                          </div>
+                          {r.notes && (
+                            <div className="col-span-2">
+                              <Label className="text-sm text-muted-foreground">ملاحظات</Label>
+                              <p className="mt-1 text-sm">{r.notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                );
+              })}
+
+              {/* Mobile Totals */}
+              <div className="p-4 bg-gradient-to-r from-slate-50 to-white">
+                <div className="font-semibold mb-3">الإجماليات</div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">عدد الساعات</div>
+                    <div className="font-semibold tabular-nums">{formatHours(totals.totalHours)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">ساعات العمل</div>
+                    <div className="font-semibold tabular-nums">{formatHours(totals.workingHours)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">التأخير</div>
+                    <div className="font-semibold tabular-nums">{formatHours(totals.delayHours)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">الإضافي</div>
+                    <div className="font-semibold tabular-nums">{formatHours(totals.overtimeHours)}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          <Card className="rounded-2xl border bg-gradient-to-b from-slate-50 to-white shadow-sm">
+            <CardHeader className="px-4 sm:px-6">
+              <CardTitle className="text-base sm:text-lg">ملاحظات وتنبيهات</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 px-4 sm:px-6">
+              <AlertCard title="لا توجد ساعات إضافية مؤثرة" description="متوسط الإضافي خلال الفترة ضئيل جداً." />
+              <AlertCard title="تأخير متكرر" description="لاحظنا تأخيراً يزيد عن ساعة في عدة أيام. يفضّل معالجة السبب." tone="warn" />
+              <AlertCard title="لا يوجد غياب" description="لم يتم تسجيل غياب خلال الفترة المحددة." tone="ok" />
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

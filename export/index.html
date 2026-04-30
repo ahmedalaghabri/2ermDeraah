@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البوابة الإلكترونية - درعة</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="container">
+            <div class="header-content">
+                <button class="menu-btn mobile-only" id="mobileMenuBtn" aria-label="فتح القائمة على الموبايل">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" x2="20" y1="6" y2="6"/>
+                        <line x1="4" x2="20" y1="12" y2="12"/>
+                        <line x1="4" x2="20" y1="18" y2="18"/>
+                    </svg>
+                </button>
+                
+                <button class="menu-btn desktop-only" id="sidebarToggle" aria-label="طي القائمة الجانبية">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" x2="20" y1="6" y2="6"/>
+                        <line x1="4" x2="20" y1="12" y2="12"/>
+                        <line x1="4" x2="20" y1="18" y2="18"/>
+                    </svg>
+                </button>
+
+                <!-- شعار + العنوان -->
+                <div class="logo-section">
+                    <img src="logonew.svg" alt="الشعار" class="logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="logo-text" style="display: none;">درعة</span>
+                </div>
+
+                <div class="header-actions">
+                    <!-- Search Bar -->
+                    <div class="search-container desktop-only">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            <input type="text" placeholder="ابحث عن خدمة أو مستند..." class="search-input">
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <button class="notification-btn" aria-label="التنبيهات">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <!-- Dark Mode Toggle -->
+                    <button class="action-btn" id="darkModeToggle" aria-label="تبديل الوضع الليلي">
+                        <svg class="icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+                        </svg>
+                        <svg class="icon moon-icon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Settings -->
+                    <button class="action-btn desktop-only">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6M12 17v6M5.64 7.05l4.95 4.95M13.41 13.41l4.95 4.95M7.05 18.36l4.95-4.95M13.41 10.59l4.95-4.95"/>
+                        </svg>
+                        <span>الإعدادات</span>
+                    </button>
+
+                    <!-- Logout -->
+                    <button class="action-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16,17 21,12 16,7"/>
+                            <line x1="21" x2="9" y1="12" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <div class="sidebar-content">
+                    <!-- عام -->
+                    <div class="sidebar-group">
+                        <button class="group-header">
+                            <span>عام</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                        <div class="group-items">
+                            <button class="sidebar-item active" data-key="dashboard">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                    <path d="M12 7v5l4 2"/>
+                                </svg>
+                                <span>الرئيسية</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- الطلبات -->
+                    <div class="sidebar-group">
+                        <button class="group-header">
+                            <span>الطلبات</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                        <div class="group-items">
+                            <button class="sidebar-item" data-key="request_new">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="12" x2="12" y1="18" y2="12"/>
+                                    <line x1="9" x2="15" y1="15" y2="15"/>
+                                </svg>
+                                <span>طلب جديد</span>
+                            </button>
+                            <button class="sidebar-item" data-key="inbox">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/>
+                                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                </svg>
+                                <span>الوارد</span>
+                            </button>
+                            <button class="sidebar-item" data-key="outbox">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                    <polyline points="16,6 12,2 8,6"/>
+                                    <line x1="12" x2="12" y1="2" y2="15"/>
+                                </svg>
+                                <span>الصادر</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- الحضور والانصراف -->
+                    <div class="sidebar-group">
+                        <button class="group-header">
+                            <span>الحضور والانصراف</span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </button>
+                        <div class="group-items">
+                            <button class="sidebar-item" data-key="attendance_report">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                    <line x1="16" x2="16" y1="2" y2="6"/>
+                                    <line x1="8" x2="8" y1="2" y2="6"/>
+                                    <line x1="3" x2="21" y1="10" y2="10"/>
+                                </svg>
+                                <span>تقرير الحضور</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapse Button -->
+                <div class="sidebar-footer">
+                    <button class="collapse-btn" id="collapseBtn">
+                        <svg class="icon expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15,18 9,12 15,6"/>
+                        </svg>
+                        <svg class="icon collapse-icon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"/>
+                        </svg>
+                        <span class="collapse-text">طيّ</span>
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <div class="content-container">
+                <!-- Dashboard Content -->
+                <div id="dashboardContent" class="page-content">
+                    <!-- الخدمات الأساسية -->
+                    <div class="services-section">
+                        <h2 class="section-title">الخدمات الأساسية</h2>
+                        <div class="cards-grid primary-grid">
+                            <div class="service-card" data-action="add">
+                                <div class="card-gradient from-blue"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14,2 14,8 20,8"/>
+                                            <line x1="12" x2="12" y1="18" y2="12"/>
+                                            <line x1="9" x2="15" y1="15" y2="15"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>معاملة جديد</h3>
+                                        <p>بدء معاملة جديدة</p>
+                                    </div>
+                                </div>
+                                <div class="card-action">
+                                    <span>بدء الإضافة</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card" data-action="inbox">
+                                <div class="card-gradient from-emerald"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/>
+                                            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>الوارد</h3>
+                                        <p>المكاتبات الواردة</p>
+                                    </div>
+                                    <span class="card-badge">0</span>
+                                </div>
+                                <div class="card-action">
+                                    <span>التفاصيل</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card" data-action="outbox">
+                                <div class="card-gradient from-amber"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                            <polyline points="16,6 12,2 8,6"/>
+                                            <line x1="12" x2="12" y1="2" y2="15"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>الصادر</h3>
+                                        <p>إدارة الصادر</p>
+                                    </div>
+                                    <span class="card-badge">1</span>
+                                </div>
+                                <div class="card-action">
+                                    <span>التفاصيل</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card" data-action="attendance_report">
+                                <div class="card-gradient from-indigo"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                            <line x1="16" x2="16" y1="2" y2="6"/>
+                                            <line x1="8" x2="8" y1="2" y2="6"/>
+                                            <line x1="3" x2="21" y1="10" y2="10"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>تقرير الحضور</h3>
+                                        <p>نسبة الالتزام اليوم</p>
+                                    </div>
+                                </div>
+                                <div class="card-action">
+                                    <span>عرض التقرير</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- الخدمات الإضافية -->
+                    <div class="services-section">
+                        <h2 class="section-title">الخدمات الإضافية</h2>
+                        <div class="cards-grid secondary-grid">
+                            <div class="service-card">
+                                <div class="card-gradient from-red"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>التنبيهات</h3>
+                                        <p>إشعارات النظام</p>
+                                    </div>
+                                    <span class="card-badge">3</span>
+                                </div>
+                                <div class="card-action">
+                                    <span>إخفاء التنبيهات</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card">
+                                <div class="card-gradient from-sky"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14,2 14,8 20,8"/>
+                                            <line x1="16" x2="8" y1="13" y2="13"/>
+                                            <line x1="16" x2="8" y1="17" y2="17"/>
+                                            <polyline points="10,9 9,9 8,9"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>عقد العمل الإلكتروني</h3>
+                                        <p>إدارة العقود</p>
+                                    </div>
+                                    <span class="card-badge">12</span>
+                                </div>
+                                <div class="card-action">
+                                    <span>عرض العقود</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card">
+                                <div class="card-gradient from-purple"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="16" cy="4" r="1"/>
+                                            <path d="m18 19 1-7-6 1"/>
+                                            <path d="m5 8 3-3 5.5 3 2.5 6.5L16 17l.5 4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>دليل التعامل مع ذوي الإعاقة</h3>
+                                        <p>تيسير الوصول</p>
+                                    </div>
+                                </div>
+                                <div class="card-action">
+                                    <span>التفاصيل</span>
+                                </div>
+                            </div>
+
+                            <div class="service-card">
+                                <div class="card-gradient from-rose"></div>
+                                <div class="card-content">
+                                    <div class="card-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="m9 12 2 2 4-4"/>
+                                            <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/>
+                                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                                        </svg>
+                                    </div>
+                                    <div class="card-info">
+                                        <h3>مسابقة التميز المؤسسي</h3>
+                                        <p>مؤشرات التميز</p>
+                                    </div>
+                                </div>
+                                <div class="card-action">
+                                    <span>اشترك الآن</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Transaction Form (Hidden by default) -->
+                <div id="addTransactionContent" class="page-content" style="display: none;">
+                    <div class="breadcrumb">
+                        <button class="breadcrumb-link" id="backToDashboard">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15,18 9,12 15,6"/>
+                            </svg>
+                            الرئيسية
+                        </button>
+                        <span>/</span>
+                        <span>إضافة معاملة</span>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="form-header">
+                            <div>
+                                <h2>إضافة معاملة</h2>
+                                <p>أدخل تفاصيل المعاملة الجديدة، الحقول الأساسية مطلوبة.</p>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn-secondary" id="cancelForm">إلغاء</button>
+                                <button class="btn-primary" id="saveForm">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20,6 9,17 4,12"/>
+                                    </svg>
+                                    حفظ المعاملة
+                                </button>
+                            </div>
+                        </div>
+
+                        <form class="transaction-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>عنوان المعاملة <span class="required">*</span></label>
+                                    <input type="text" placeholder="مثال: طلب اعتماد عقد صيانة" required>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>الاتجاه <span class="required">*</span></label>
+                                        <select required>
+                                            <option>صادر</option>
+                                            <option>وارد</option>
+                                            <option>داخلي</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>نوع المعاملة</label>
+                                        <select>
+                                            <option>خطاب</option>
+                                            <option>طلب</option>
+                                            <option>محضر</option>
+                                            <option>مذكرة</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>رقم المرجع</label>
+                                        <input type="text" placeholder="مثال: HR-2025-001">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>التاريخ <span class="required">*</span></label>
+                                        <input type="date" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label>الوصف</label>
+                                    <textarea rows="4" placeholder="تفاصيل إضافية حول المعاملة"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Attendance Report (Hidden by default) -->
+                <div id="attendanceContent" class="page-content" style="display: none;">
+                    <div class="page-shell">
+                        <h2>تقرير الحضور</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">نسبة الحضور اليوم</div>
+                                <div class="stat-value">92%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">عدد المتأخرين</div>
+                                <div class="stat-value">5</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">عدد الغياب</div>
+                                <div class="stat-value">3</div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <p>رسم بياني لحضور الأسبوع</p>
+                                <div class="chart-bars">
+                                    <div class="chart-bar" style="height: 92%;" title="السبت: 92%"></div>
+                                    <div class="chart-bar" style="height: 94%;" title="الأحد: 94%"></div>
+                                    <div class="chart-bar" style="height: 90%;" title="الاثنين: 90%"></div>
+                                    <div class="chart-bar" style="height: 96%;" title="الثلاثاء: 96%"></div>
+                                    <div class="chart-bar" style="height: 93%;" title="الأربعاء: 93%"></div>
+                                    <div class="chart-bar" style="height: 91%;" title="الخميس: 91%"></div>
+                                    <div class="chart-bar" style="height: 0%;" title="الجمعة: عطلة"></div>
+                                </div>
+                                <div class="chart-labels">
+                                    <span>سبت</span>
+                                    <span>أحد</span>
+                                    <span>اثنين</span>
+                                    <span>ثلاثاء</span>
+                                    <span>أربعاء</span>
+                                    <span>خميس</span>
+                                    <span>جمعة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>تصدير HTML + CSS + JavaScript - البوابة الإلكترونية</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-overlay"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <span>القائمة</span>
+                <button class="drawer-close" id="drawerClose">إغلاق</button>
+            </div>
+            
+            <div class="drawer-search">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" placeholder="ابحث عن خدمة..." class="search-input">
+                </div>
+            </div>
+
+            <div class="drawer-menu">
+                <div class="drawer-group">
+                    <div class="drawer-group-title">عام</div>
+                    <button class="drawer-item active" data-key="dashboard">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                            <path d="M12 7v5l4 2"/>
+                        </svg>
+                        <span>الرئيسية</span>
+                    </button>
+                </div>
+
+                <div class="drawer-group">
+                    <div class="drawer-group-title">الطلبات</div>
+                    <button class="drawer-item" data-key="request_new">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="12" x2="12" y1="18" y2="12"/>
+                            <line x1="9" x2="15" y1="15" y2="15"/>
+                        </svg>
+                        <span>طلب جديد</span>
+                    </button>
+                    <button class="drawer-item" data-key="inbox">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/>
+                            <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                        </svg>
+                        <span>الوارد</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav mobile-only">
+        <button class="bottom-nav-item active">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+                <path d="M12 7v5l4 2"/>
+            </svg>
+            <span>الرئيسية</span>
+        </button>
+        <button class="bottom-nav-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/>
+                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            </svg>
+            <span>الوارد</span>
+        </button>
+        <button class="bottom-nav-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6M12 17v6M5.64 7.05l4.95 4.95M13.41 13.41l4.95 4.95M7.05 18.36l4.95-4.95M13.41 10.59l4.95-4.95"/>
+            </svg>
+            <span>الإعدادات</span>
+        </button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
