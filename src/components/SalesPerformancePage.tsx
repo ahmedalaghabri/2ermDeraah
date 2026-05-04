@@ -18,6 +18,9 @@ import {
   LayoutGrid,
   Rows,
   Pin,
+  SlidersHorizontal,
+  Filter,
+  MoreVertical,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -483,7 +486,7 @@ function KpiCard({ title, value, sub, icon: Icon, color = "#4D8AFF", progress }:
           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
         </div>
       </div>
-      <div className="text-lg sm:text-2xl font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
+      <div className="text-sm sm:text-lg font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
       {sub && <div className="text-[10px] sm:text-xs text-neutral-500 font-medium">{sub}</div>}
       {progress !== undefined && (
         <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 overflow-hidden">
@@ -547,16 +550,6 @@ function DrillTable({
   mobileTableMode,
   setMobileTableMode,
 }: DrillTableProps & { mobileTableMode?: "default" | "pinned" | "cards" | "single", setMobileTableMode?: (mode: "default" | "pinned" | "cards" | "single") => void }) {
-  const sorted = [...rows].sort((a, b) => {
-    const aVal = (a as any)[sortKey] ?? 0;
-    const bVal = (b as any)[sortKey] ?? 0;
-    return sortDir === "desc" ? bVal - aVal : aVal - bVal;
-  });
-  const PAGE_SIZE = 40;
-  const start = (tablePage - 1) * PAGE_SIZE;
-  const paged = sorted.slice(start, start + PAGE_SIZE);
-  const pages = Math.ceil(sorted.length / PAGE_SIZE);
-
   // Detect which hierarchy columns have data
   const hasRegion    = rows.some(r => r.regionName);
   const hasArea      = rows.some(r => r.areaName);
@@ -603,6 +596,71 @@ function DrillTable({
   ];
   const activeCols = filterType === "sellers" ? sellerCols : filterType === "showrooms" ? showroomCols : teamCols;
 
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [colMenuOpen, setColMenuOpen] = useState(false);
+  const [optGroupOpen, setOptGroupOpen] = useState(false);
+  const visibleCols = activeCols.filter(col => !hiddenCols.has(col.key));
+
+  // ── Column filter states ──
+  type ColFilter = { type: "numeric"; min: string; max: string } | { type: "text"; value: string };
+  const [colFilters, setColFilters] = useState<Record<string, ColFilter>>({});
+  const [filterMenuCol, setFilterMenuCol] = useState<string | null>(null);
+  const [filterAnchorRect, setFilterAnchorRect] = useState<DOMRect | null>(null);
+
+  const NUMERIC_KEYS = new Set(["sales","target","invoices","pieces","customers","prevSales","avgInvoice","avgPiece"]);
+
+  function isFilterActive(key: string) {
+    const f = colFilters[key] as any;
+    if (!f) return false;
+    return f.type === "numeric" ? (f.min !== "" || f.max !== "") : !!f.value;
+  }
+  const activeFilterCount = visibleCols.filter(c => isFilterActive(c.key)).length;
+
+  function openFilter(colKey: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (filterMenuCol === colKey) { setFilterMenuCol(null); setFilterAnchorRect(null); return; }
+    setFilterMenuCol(colKey);
+    setFilterAnchorRect((e.currentTarget as HTMLElement).getBoundingClientRect());
+  }
+  function updateNumFilter(key: string, field: "min" | "max", val: string) {
+    setColFilters(prev => {
+      const cur = (prev[key] as any) || { type: "numeric", min: "", max: "" };
+      return { ...prev, [key]: { ...cur, type: "numeric", [field]: val } };
+    });
+  }
+  function updateTextFilter(key: string, val: string) {
+    setColFilters(prev => ({ ...prev, [key]: { type: "text", value: val } }));
+  }
+  function clearFilter(key: string) {
+    setColFilters(prev => { const n = { ...prev }; delete n[key]; return n; });
+    setFilterMenuCol(null);
+  }
+
+  // ── Apply column filters, sort & page ──
+  const filteredRows = rows.filter(row => {
+    for (const [key, filter] of Object.entries(colFilters)) {
+      const f = filter as any;
+      if (f.type === "numeric") {
+        const val = (row as any)[key] ?? 0;
+        if (f.min !== "" && !isNaN(parseFloat(f.min)) && val < parseFloat(f.min)) return false;
+        if (f.max !== "" && !isNaN(parseFloat(f.max)) && val > parseFloat(f.max)) return false;
+      } else {
+        const str = String((row as any)[key] ?? "").toLowerCase();
+        if (f.value && !str.includes(f.value.toLowerCase())) return false;
+      }
+    }
+    return true;
+  });
+  const sorted = [...filteredRows].sort((a, b) => {
+    const aVal = (a as any)[sortKey] ?? 0;
+    const bVal = (b as any)[sortKey] ?? 0;
+    return sortDir === "desc" ? bVal - aVal : aVal - bVal;
+  });
+  const PAGE_SIZE = 40;
+  const start = (tablePage - 1) * PAGE_SIZE;
+  const paged = sorted.slice(start, start + PAGE_SIZE);
+  const pages = Math.ceil(sorted.length / PAGE_SIZE);
+
   const totalAvgInvoice = totalInvoices > 0 ? Math.round(totalSales / totalInvoices) : 0;
   const totalAvgPiece = totalInvoices > 0 ? Math.round(totalPieces / totalInvoices) : 0;
 
@@ -645,12 +703,12 @@ function DrillTable({
   // Mobile view modes
   const renderMobilePinnedView = () => {
     const mainCol = hierarchyCols[0] || { key: "name", label: nameLabel };
-    const otherCols = activeCols.filter(col => col.key !== mainCol.key);
+    const otherCols = visibleCols.filter(col => col.key !== mainCol.key);
     
     return (
-      <div className="block sm:hidden">
+      <div>
         <div className="overflow-x-auto">
-          <table className="w-full text-[11px]" style={{ minWidth: 320 }}>
+          <table className="w-full text-[11px] sm:text-[13px]" style={{ minWidth: 320 }}>
             <thead>
               <tr className="bg-neutral-50 border-b border-neutral-100">
                 <th className="px-2 py-2 text-right font-bold text-neutral-600 sticky right-0 bg-white z-10 border-l border-neutral-200">
@@ -700,7 +758,7 @@ function DrillTable({
 
   const renderMobileCardsView = () => {
     return (
-      <div className="block sm:hidden p-2 space-y-2">
+      <div className="p-2 space-y-2">
         {paged.map((row, idx) => {
           const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
           return (
@@ -746,7 +804,7 @@ function DrillTable({
 
   const renderMobileSingleView = () => {
     return (
-      <div className="block sm:hidden space-y-3">
+      <div className="space-y-3">
         {paged.map((row, idx) => {
           const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
           return (
@@ -779,39 +837,95 @@ function DrillTable({
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
         <h3 className="text-sm font-bold text-neutral-800">{title}</h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500 font-medium">{rowCount} سجل</span>
-          {/* Mobile view mode selector */}
-          {setMobileTableMode && (
-            <div className="sm:hidden flex items-center gap-1 bg-neutral-100 rounded-lg p-0.5">
-              {[
-                ["default", "افتراضي", Table],
-                ["pinned", "مثبت", Pin],
-                ["cards", "بطاقات", LayoutGrid],
-                ["single", "مفرد", Rows]
-              ].map(([mode, label, Icon]) => (
-                <button key={mode} onClick={() => setMobileTableMode(mode as "default" | "pinned" | "cards" | "single")}
-                  className={cn("px-1.5 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1",
-                    mobileTableMode === mode ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
-                  title={label}>
-                  <Icon className="w-3 h-3" />
-                </button>
-              ))}
+          <span className="text-xs text-neutral-500 font-medium">
+            {activeFilterCount > 0 ? `${sorted.length} / ${rowCount}` : `${rowCount}`} سجل
+            {activeFilterCount > 0 && (
+              <button onClick={() => setColFilters({})} className="mr-1.5 text-[10px] text-red-500 hover:text-red-700 font-normal">× مسح الفلاتر ({activeFilterCount})</button>
+            )}
+          </span>
+          {/* Options toggle button */}
+          <button onClick={() => setOptGroupOpen(v => !v)}
+            className={cn("p-1.5 rounded-lg transition-colors",
+              optGroupOpen ? "bg-neutral-900 text-white" : "text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100")}>
+            <MoreVertical className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Options icon group */}
+          {optGroupOpen && (
+          <div className="flex items-center gap-0.5 bg-neutral-100 rounded-lg p-0.5">
+            {/* Column picker */}
+            <div className="relative">
+              <button onClick={() => setColMenuOpen(v => !v)}
+                title="إظهار/إخفاء الأعمدة"
+                className={cn("px-1.5 py-1 rounded-md text-xs font-medium transition-all flex items-center",
+                  colMenuOpen ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700")}>
+                <SlidersHorizontal className="w-3 h-3" />
+              </button>
+              {colMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[55]" onClick={() => setColMenuOpen(false)} />
+                  <div className="absolute left-0 top-full mt-1 z-[60] bg-white border border-neutral-200 rounded-xl shadow-xl p-2 min-w-[140px]">
+                    <p className="text-[10px] font-bold text-neutral-400 uppercase px-2 pb-1">إظهار الأعمدة</p>
+                    {activeCols.filter(col => col.key !== "name").map(col => (
+                      <button key={col.key}
+                        onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50">
+                        <div className={cn("w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors",
+                          !hiddenCols.has(col.key) ? "bg-neutral-900 border-neutral-900" : "border-neutral-300")}>
+                          {!hiddenCols.has(col.key) && <Check className="w-2.5 h-2.5 text-white" />}
+                        </div>
+                        <span className="text-xs text-neutral-700">{col.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+            {/* View mode buttons */}
+            {setMobileTableMode && (
+              <>
+                <div className="w-px h-4 bg-neutral-300 mx-0.5" />
+                {[
+                  ["default", "افتراضي", Table],
+                  ["pinned", "مثبت", Pin],
+                  ["cards", "بطاقات", LayoutGrid],
+                  ["single", "مفرد", Rows]
+                ].map(([mode, label, Icon]) => (
+                  <button key={mode} onClick={() => setMobileTableMode(mode as "default" | "pinned" | "cards" | "single")}
+                    className={cn("px-1.5 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1",
+                      mobileTableMode === mode ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
+                    title={label}>
+                    <Icon className="w-3 h-3" />
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
           )}
         </div>
       </div>
       
-      {/* Desktop view - always show default table */}
-      <div className="hidden sm:block overflow-x-auto">
+      {/* Default table view */}
+      {(!mobileTableMode || mobileTableMode === "default") && (
+      <div className="overflow-x-auto">
         <table className="w-full text-[11px] sm:text-[13px]" style={{ minWidth: 600 }}>
           <thead>
             <tr className="bg-neutral-50 border-b border-neutral-100">
-              {activeCols.map(col => (
-                <th key={col.key} onClick={() => toggleSort(col.key)}
-                  className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 cursor-pointer hover:bg-neutral-100 transition-colors select-none whitespace-nowrap text-xs sm:text-sm">
-                  <div className="flex items-center justify-between gap-1 w-full">
-                    <ArrowUpDown className={cn("w-2 h-2.5 sm:w-2.5 sm:h-2.5 order-last", sortKey === col.key ? "text-[#B21063]" : "text-neutral-300")} />
-                    <span>{col.label}</span>
+              {visibleCols.map(col => (
+                <th key={col.key}
+                  className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 hover:bg-neutral-50 transition-colors select-none whitespace-nowrap text-xs sm:text-sm">
+                  <div className="flex items-center justify-between gap-0.5 w-full">
+                    <div className="flex items-center gap-0.5 order-last shrink-0">
+                      <button onClick={() => toggleSort(col.key)} className="p-0.5 rounded hover:bg-neutral-200">
+                        <ArrowUpDown className={cn("w-2 h-2.5 sm:w-2.5 sm:h-2.5", sortKey === col.key ? "text-[#B21063]" : "text-neutral-300")} />
+                      </button>
+                      <button onClick={e => openFilter(col.key, e)}
+                        className={cn("p-0.5 rounded hover:bg-neutral-200 transition-colors",
+                          isFilterActive(col.key) ? "text-[#B21063]" : "text-neutral-300 hover:text-neutral-500")}>
+                        <Filter className="w-2 h-2.5 sm:w-2.5 sm:h-2.5" />
+                      </button>
+                    </div>
+                    <span className="cursor-pointer hover:text-neutral-900" onClick={() => toggleSort(col.key)}>{col.label}</span>
                   </div>
                 </th>
               ))}
@@ -825,7 +939,7 @@ function DrillTable({
               return (
                 <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}
                   onClick={() => onDrill(row.id, row.name)}>
-                  {activeCols.map(col => (
+                  {visibleCols.map(col => (
                     <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm">
                       {renderCell(row, col.key)}
                     </td>
@@ -842,7 +956,7 @@ function DrillTable({
           </tbody>
           <tfoot>
             <tr className="bg-neutral-50 border-t-2 border-neutral-200 font-bold">
-              {activeCols.map(col => (
+              {visibleCols.map(col => (
                 <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm">
                   {renderFooterCell(col.key)}
                 </td>
@@ -859,10 +973,11 @@ function DrillTable({
           </tfoot>
         </table>
       </div>
-      
-      {/* Mobile views - only show on mobile */}
-      <div className="sm:hidden">
-        {mobileTableMode === "default" && (
+      )}
+
+      {/* Other views */}
+      <div>
+        {false && (
           <div className="overflow-x-auto">
             <table className="w-full text-[11px]" style={{ minWidth: 600 }}>
               <thead>
@@ -908,6 +1023,7 @@ function DrillTable({
         {mobileTableMode === "pinned" && renderMobilePinnedView()}
         {mobileTableMode === "cards" && renderMobileCardsView()}
         {mobileTableMode === "single" && renderMobileSingleView()}
+        {!mobileTableMode && null}
       </div>
       
       {pages > 1 && (
@@ -922,6 +1038,49 @@ function DrillTable({
             التالي <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
+      )}
+
+      {/* ── Column filter portal ── */}
+      {filterMenuCol && filterAnchorRect && createPortal(
+        <>
+          <div className="fixed inset-0 z-[99]" onClick={() => { setFilterMenuCol(null); setFilterAnchorRect(null); }} />
+          <div className="fixed z-[100] bg-white border border-neutral-200 rounded-xl shadow-2xl p-3 w-52"
+            style={{ top: filterAnchorRect.bottom + 6, right: window.innerWidth - filterAnchorRect.right }}>
+            <p className="text-[11px] font-bold text-neutral-500 mb-2 pb-1.5 border-b border-neutral-100">
+              {NUMERIC_KEYS.has(filterMenuCol) ? "تصفية الأرقام" : "بحث في العمود"}
+            </p>
+            {NUMERIC_KEYS.has(filterMenuCol) ? (
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[10px] text-neutral-400 block mb-0.5">أكبر من أو يساوي</label>
+                  <input type="number" dir="ltr" placeholder="0"
+                    className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                    value={(colFilters[filterMenuCol] as any)?.min ?? ""}
+                    onChange={e => updateNumFilter(filterMenuCol, "min", e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-[10px] text-neutral-400 block mb-0.5">أصغر من أو يساوي</label>
+                  <input type="number" dir="ltr" placeholder="∞"
+                    className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                    value={(colFilters[filterMenuCol] as any)?.max ?? ""}
+                    onChange={e => updateNumFilter(filterMenuCol, "max", e.target.value)} />
+                </div>
+              </div>
+            ) : (
+              <input type="text" placeholder="ابحث..." autoFocus
+                className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                value={(colFilters[filterMenuCol] as any)?.value ?? ""}
+                onChange={e => updateTextFilter(filterMenuCol, e.target.value)} />
+            )}
+            {isFilterActive(filterMenuCol) && (
+              <button onClick={() => clearFilter(filterMenuCol)}
+                className="mt-2 w-full text-[10px] text-red-500 hover:text-red-700 text-right py-0.5">
+                × مسح هذا الفلتر
+              </button>
+            )}
+          </div>
+        </>,
+        document.body
       )}
     </div>
   );
@@ -1061,9 +1220,11 @@ interface DateRangePickerProps {
   dateTo: string;
   onFromChange: (v: string) => void;
   onToChange: (v: string) => void;
+  iconOnly?: boolean;
+  active?: boolean;
 }
 
-function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange }: DateRangePickerProps) {
+function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly, active }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [selecting, setSelecting] = useState<"from" | "to">("from");
@@ -1266,20 +1427,36 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange }: DateRan
   return (
     <div ref={containerRef} className="relative shrink-0" dir="rtl">
       {/* Trigger button */}
-      <button
-        ref={btnRef}
-        onClick={openDropdown}
-        className="flex items-center gap-1.5 sm:gap-2 border border-neutral-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 bg-white hover:bg-neutral-50 transition-colors shadow-sm"
-      >
-        <Calendar className="w-3 h-3.5 sm:w-3.5 sm:h-3.5 text-neutral-400 shrink-0" />
-        <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-700 whitespace-nowrap">
-          {displayFrom}
-        </span>
-        <span className="text-[9px] sm:text-[10px] text-neutral-400 mx-0.5 sm:mx-1">—</span>
-        <span className={cn("text-[10px] sm:text-[11px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700")}>
-          {displayTo}
-        </span>
-      </button>
+      {iconOnly ? (
+        <button
+          ref={btnRef}
+          onClick={openDropdown}
+          title={`${displayFrom} — ${displayTo}`}
+          className={cn(
+            "px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] font-semibold transition-all whitespace-nowrap",
+            open || active
+              ? "bg-neutral-800 text-white shadow-sm"
+              : "text-neutral-500 hover:text-neutral-700"
+          )}
+        >
+          محدد
+        </button>
+      ) : (
+        <button
+          ref={btnRef}
+          onClick={openDropdown}
+          className="flex items-center gap-1.5 sm:gap-2 border border-neutral-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 bg-white hover:bg-neutral-50 transition-colors shadow-sm"
+        >
+          <Calendar className="w-3 h-3.5 sm:w-3.5 sm:h-3.5 text-neutral-400 shrink-0" />
+          <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-700 whitespace-nowrap">
+            {displayFrom}
+          </span>
+          <span className="text-[9px] sm:text-[10px] text-neutral-400 mx-0.5 sm:mx-1">—</span>
+          <span className={cn("text-[10px] sm:text-[11px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700")}>
+            {displayTo}
+          </span>
+        </button>
+      )}
 
       {createPortal(dropdown, document.body)}
     </div>
@@ -1438,6 +1615,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const [dateFrom, setDateFrom] = useState<string>(firstOfMonth);
   const [dateTo, setDateTo] = useState<string>(todayStr);
+  const [customRangeActive, setCustomRangeActive] = useState(false);
 
   // Filter
   const [filterType, setFilterType] = useState<FilterType>("team");
@@ -1697,6 +1875,19 @@ export default function SalesPerformancePage({ onBack }: Props) {
       <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
         <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
           {/* Filter type tabs */}
+          <AnimatePresence initial={false}>
+          {(!headerCollapsed || viewMode !== "table") && (
+          <motion.div
+            key="tabs-row"
+            variants={{
+              show: { height: "auto", opacity: 1, transition: { height: { type: "spring", stiffness: 700, damping: 42, mass: 0.4 }, opacity: { duration: 0.07 } } },
+              hide: { height: 0, opacity: 0, transition: { height: { type: "spring", stiffness: 500, damping: 38, mass: 0.8 }, opacity: { duration: 0.1 } } }
+            }}
+            initial="hide"
+            animate="show"
+            exit="hide"
+            className="overflow-hidden"
+          >
           <div className="px-2 sm:px-6 py-1.5 sm:py-2 border-b border-neutral-100 flex items-center gap-1.5 sm:gap-2">
             <div className="flex flex-1 items-center gap-0.5 rounded-xl p-0.5 min-w-0">
             {([["team","الفريق"],["areas","المناطق"],["supervisors","المشرفين"],["showrooms","المعارض"],["sellers","البائعين"]] as [FilterType, string][]).map(([type, label]) => (
@@ -1717,10 +1908,13 @@ export default function SalesPerformancePage({ onBack }: Props) {
             ))}
           </div>
           </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
 
           {/* Filters and view mode */}
           <AnimatePresence initial={false}>
-          {(!headerCollapsed || window.innerWidth >= 768) && (
+          {(!headerCollapsed || viewMode === "table") && (
           <motion.div
             key="filters-row"
             variants={{
@@ -1744,7 +1938,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
             exit="hide"
             className="overflow-hidden px-2 sm:px-6"
           >
-          <div className="py-1 pb-0 mb-1">
+          <div className="py-1 pb-0 mb-1 sm:py-[14px] sm:pb-0">
             <div className="flex items-center gap-3 sm:gap-4 w-full overflow-x-auto">
               {viewMode === "table" ? (
                 /* ── Table view: 5-level cascading filters + date range ── */
@@ -1759,12 +1953,6 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </button>
                   )}
-
-                  {/* Date range picker */}
-                  <DateRangePicker
-                    dateFrom={dateFrom} dateTo={dateTo}
-                    onFromChange={setDateFrom} onToChange={setDateTo}
-                  />
 
                   {/* الإقليم */}
                   <MultiSelectDropdown
@@ -1884,6 +2072,9 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     {l}
                   </button>
                 ))}
+                <DateRangePicker iconOnly active={customRangeActive} dateFrom={dateFrom} dateTo={dateTo}
+                  onFromChange={v => { setDateFrom(v); setCustomRangeActive(true); }}
+                  onToChange={v => { setDateTo(v); setCustomRangeActive(true); }} />
               </div>
               <div className="flex items-center gap-1 mr-auto">
                 <button onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors">
@@ -2032,8 +2223,8 @@ export default function SalesPerformancePage({ onBack }: Props) {
             <motion.div key="analytics" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}
               className="space-y-4 mx-2.5 sm:mx-0">
 
-              {/* Row: bar charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Row: bar charts + trend */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
                 {/* Team/Showrooms/Sellers bar chart */}
                 <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
@@ -2084,43 +2275,43 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Sales trend chart */}
-              <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                  <h3 className="text-sm font-bold text-neutral-800">
-                    {period === "day" ? `مبيعات يوم ${selectedDay} ${MONTHS_AR[month]}` :
-                     period === "year" ? `مبيعات سنة ${year}` :
-                     `مبيعات ${MONTHS_AR[month]} ${year}`}
-                  </h3>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-3 h-0.5 rounded bg-emerald-400 inline-block" />
-                      <span className="text-neutral-500 font-medium">حالي</span>
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-3 h-0.5 rounded bg-amber-400 inline-block" style={{ borderBottom: "2px dashed" }} />
-                      <span className="text-neutral-500 font-medium">سابق</span>
-                    </span>
+                {/* Sales trend chart */}
+                <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <h3 className="text-sm font-bold text-neutral-800">
+                      {period === "day" ? `مبيعات يوم ${selectedDay} ${MONTHS_AR[month]}` :
+                       period === "year" ? `مبيعات سنة ${year}` :
+                       `مبيعات ${MONTHS_AR[month]} ${year}`}
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-3 h-0.5 rounded bg-emerald-400 inline-block" />
+                        <span className="text-neutral-500 font-medium">حالي</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-3 h-0.5 rounded bg-amber-400 inline-block" style={{ borderBottom: "2px dashed" }} />
+                        <span className="text-neutral-500 font-medium">سابق</span>
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="overflow-x-auto">
-                  <AreaChart data={chartData} height={130} />
-                </div>
-                <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-neutral-50">
-                  <div className="text-center">
-                    <div className="text-xs text-neutral-400 font-medium">حالي</div>
-                    <div className="text-sm font-bold text-emerald-600">{formatNum(currentSales)}</div>
+                  <div className="overflow-x-auto">
+                    <AreaChart data={chartData} height={130} />
                   </div>
-                  <div className="text-center">
-                    <div className="text-xs text-neutral-400 font-medium">سابق</div>
-                    <div className="text-sm font-bold text-amber-600">{formatNum(prevSalesChart)}</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-neutral-400 font-medium">النمو</div>
-                    <div className={cn("text-sm font-bold", growthPct >= 0 ? "text-emerald-600" : "text-rose-500")}>
-                      {growthPct >= 0 ? "+" : ""}{growthPct}%
+                  <div className="grid grid-cols-3 gap-3 mt-3 pt-3 border-t border-neutral-50">
+                    <div className="text-center">
+                      <div className="text-xs text-neutral-400 font-medium">حالي</div>
+                      <div className="text-sm font-bold text-emerald-600">{formatNum(currentSales)}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-neutral-400 font-medium">سابق</div>
+                      <div className="text-sm font-bold text-amber-600">{formatNum(prevSalesChart)}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-neutral-400 font-medium">النمو</div>
+                      <div className={cn("text-sm font-bold", growthPct >= 0 ? "text-emerald-600" : "text-rose-500")}>
+                        {growthPct >= 0 ? "+" : ""}{growthPct}%
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2330,6 +2521,11 @@ export default function SalesPerformancePage({ onBack }: Props) {
               {/* ── Smart table: determined by most specific active filter ── */}
               {(() => {
                 // Helper: aggregate period-aware KPIs for a set of seller indices
+                const periodLabel = period === "day"
+                  ? `يوم ${selectedDay} ${MONTHS_AR[month]} ${year}`
+                  : period === "year" ? `سنة ${year}`
+                  : `${MONTHS_AR[month]} ${year}`;
+
                 function aggRows<T extends { id: string; name: string }>(
                   items: T[],
                   getSellers: (item: T) => typeof SELLERS[number][],
@@ -2348,10 +2544,14 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     const avgPiece   = invoices > 0 ? Math.round(pieces / invoices) : 0;
                     // Hierarchy context — infer from first seller
                     const rep = ss[0] as (typeof SELLERS[number]) | undefined;
-                    const regionName     = nextLevel === "areas"       ? REGIONS.find(r => r.id === (rep as any).regionId)?.name     : undefined;
-                    const areaName       = (nextLevel === "supervisors" || nextLevel === "areas") ? AREAS.find(a => a.id === (rep as any).areaId)?.name : undefined;
-                    const supervisorName = (nextLevel === "showrooms")  ? SUPERVISORS.find(s => s.id === (rep as any).supervisorId)?.name : undefined;
-                    const showroomName   = (nextLevel === "sellers")    ? SHOWROOMS.find(s => s.id === (rep as any).showroomId)?.name    : undefined;
+                    const regionName     = (nextLevel === "areas" || nextLevel === "supervisors" || nextLevel === "showrooms" || nextLevel === "sellers")
+                      ? REGIONS.find(r => r.id === (rep as any)?.regionId)?.name : undefined;
+                    const areaName       = (nextLevel === "supervisors" || nextLevel === "showrooms" || nextLevel === "sellers")
+                      ? AREAS.find(a => a.id === (rep as any)?.areaId)?.name : undefined;
+                    const supervisorName = (nextLevel === "showrooms" || nextLevel === "sellers")
+                      ? SUPERVISORS.find(s => s.id === (rep as any)?.supervisorId)?.name : undefined;
+                    const showroomName   = (nextLevel === "sellers")
+                      ? SHOWROOMS.find(s => s.id === (rep as any)?.showroomId)?.name : undefined;
                     return { id: item.id, name: item.name, regionName, areaName, supervisorName, showroomName, sales, target, prevSales, invoices, pieces, customers, avgInvoice, avgPiece, nextLevel };
                   }).filter(r => r.sales > 0 || r.target > 0);
                 }
@@ -2372,25 +2572,25 @@ export default function SalesPerformancePage({ onBack }: Props) {
 
                   if (currentDrillLevel === "areas") {
                     const items = AREAS.filter(a => a.regionId === last.id && filteredSellers.some(s => s.areaId === a.id));
-                    return <DrillTable key="areas" title={`تقرير المناطق | ${last.name}`} rowCount={items.length}
+                    return <DrillTable key="areas" title={`تقرير المناطق | ${last.name} | ${periodLabel}`} rowCount={items.length}
                       rows={aggRows(items, a => filteredSellers.filter(s => s.areaId === a.id), "areas")}
                       onDrill={(id, name) => drillInto("areas", id, name)} {...commonProps} nameLabel="المنطقة" />;
                   }
                   if (currentDrillLevel === "supervisors") {
                     const items = SUPERVISORS.filter(sup => sup.areaId === last.id && filteredSellers.some(s => s.supervisorId === sup.id));
-                    return <DrillTable key="supervisors" title={`تقرير المشرفين | ${last.name}`} rowCount={items.length}
+                    return <DrillTable key="supervisors" title={`تقرير المشرفين | ${last.name} | ${periodLabel}`} rowCount={items.length}
                       rows={aggRows(items, sup => filteredSellers.filter(s => s.supervisorId === sup.id), "supervisors")}
                       onDrill={(id, name) => drillInto("supervisors", id, name)} {...commonProps} nameLabel="المشرف" />;
                   }
                   if (currentDrillLevel === "showrooms") {
                     const items = SHOWROOMS.filter(sh => sh.supervisorId === last.id && filteredSellers.some(s => s.showroomId === sh.id));
-                    return <DrillTable key="showrooms" title={`تقرير المعارض | ${last.name}`} rowCount={items.length}
+                    return <DrillTable key="showrooms" title={`تقرير المعارض | ${last.name} | ${periodLabel}`} rowCount={items.length}
                       rows={aggRows(items, sh => filteredSellers.filter(s => s.showroomId === sh.id), "showrooms")}
                       onDrill={(id, name) => drillInto("showrooms", id, name)} {...commonProps} nameLabel="المعرض" />;
                   }
                   if (currentDrillLevel === "sellers") {
                     const items = filteredSellers.filter(s => s.showroomId === last.id);
-                    return <DrillTable key="sellers" title={`تقرير البائعين | ${last.name}`} rowCount={items.length}
+                    return <DrillTable key="sellers" title={`تقرير البائعين | ${last.name} | ${periodLabel}`} rowCount={items.length}
                       rows={aggRows(items, s => [s], "sellers")}
                       onDrill={(id, name) => drillInto("sellers", id, name)} {...commonProps} nameLabel="البائع" drillLabel="الأيام" />;
                   }
@@ -2399,24 +2599,24 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 // No drill path — filterType is primary
                 if (filterType === "areas") {
                   const areaItems = AREAS.filter(a => filteredSellers.some(s => s.areaId === a.id));
-                  return <DrillTable key="all-areas" title={`تقرير المناطق | ${MONTHS_AR[month]} ${year}`} rowCount={areaItems.length}
+                  return <DrillTable key="all-areas" title={`تقرير المناطق | ${periodLabel}`} rowCount={areaItems.length}
                     rows={aggRows(areaItems, a => filteredSellers.filter(s => s.areaId === a.id), "areas")}
                     onDrill={(id, name) => drillInto("areas", id, name)} {...commonProps} nameLabel="المنطقة" />;
                 }
                 if (filterType === "supervisors") {
                   const supItems = SUPERVISORS.filter(sup => filteredSellers.some(s => s.supervisorId === sup.id));
-                  return <DrillTable key="all-supervisors" title={`تقرير المشرفين | ${MONTHS_AR[month]} ${year}`} rowCount={supItems.length}
+                  return <DrillTable key="all-supervisors" title={`تقرير المشرفين | ${periodLabel}`} rowCount={supItems.length}
                     rows={aggRows(supItems, sup => filteredSellers.filter(s => s.supervisorId === sup.id), "supervisors")}
                     onDrill={(id, name) => drillInto("supervisors", id, name)} {...commonProps} nameLabel="المشرف" />;
                 }
                 if (filterType === "sellers") {
-                  return <DrillTable key="all-sellers" title={`تقرير البائعين | ${MONTHS_AR[month]} ${year}`} rowCount={filteredSellers.length}
+                  return <DrillTable key="all-sellers" title={`تقرير البائعين | ${periodLabel}`} rowCount={filteredSellers.length}
                     rows={aggRows(filteredSellers, s => [s], "sellers")}
                     onDrill={(id, name) => drillInto("sellers", id, name)} {...commonProps} nameLabel="البائع" drillLabel="الأيام" />;
                 }
                 if (filterType === "showrooms") {
                   const showroomItems = SHOWROOMS.filter(sh => filteredSellers.some(s => s.showroomId === sh.id));
-                  return <DrillTable key="all-showrooms" title={`تقرير المعارض | ${MONTHS_AR[month]} ${year}`} rowCount={showroomItems.length}
+                  return <DrillTable key="all-showrooms" title={`تقرير المعارض | ${periodLabel}`} rowCount={showroomItems.length}
                     rows={aggRows(showroomItems, sh => filteredSellers.filter(s => s.showroomId === sh.id), "showrooms")}
                     onDrill={(id, name) => drillInto("showrooms", id, name)} {...commonProps} nameLabel="المعرض" />;
                 }
@@ -2448,7 +2648,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
 
                 // team default: all regions
                 const regionItems = REGIONS.filter(r => filteredSellers.some(s => s.regionId === r.id));
-                return <DrillTable key="regions" title={`تقرير الأقاليم | ${MONTHS_AR[month]} ${year}`} rowCount={regionItems.length}
+                return <DrillTable key="regions" title={`تقرير الأقاليم | ${periodLabel}`} rowCount={regionItems.length}
                   rows={aggRows(regionItems, r => filteredSellers.filter(s => s.regionId === r.id), "regions")}
                   onDrill={(id, name) => drillInto("regions", id, name)} {...commonProps} nameLabel="الإقليم" />;
               })()}
