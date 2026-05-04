@@ -70,9 +70,9 @@ const AREAS = _AREA_META.map((a, i) => ({
   regionId: `r${a.ri + 1}`,
 }));
 
-// 200 supervisors: 8 per area (25 areas × 8 = 200)
-const SUPERVISORS = Array.from({ length: 200 }, (_, i) => {
-  const areaIdx = Math.floor(i / 8);              // area 0-24, 8 supervisors each
+// 100 supervisors: 4 per area (25 areas × 4 = 100)
+const SUPERVISORS = Array.from({ length: 100 }, (_, i) => {
+  const areaIdx = Math.floor(i / 4);              // area 0-24, 4 supervisors each
   const area    = AREAS[areaIdx];
   const s1 = _ds(_dsk(i, 1, 31));
   const s2 = _ds(_dsk(i, 2, 43));
@@ -84,13 +84,13 @@ const SUPERVISORS = Array.from({ length: 200 }, (_, i) => {
   };
 });
 
-// 1000 showrooms: 40 per area (25 areas × 40 = 1000)
-// Each group of 5 showrooms inside an area shares one supervisor (40 showrooms ÷ 8 supervisors = 5)
-const SHOWROOMS = Array.from({ length: 1000 }, (_, i) => {
-  const areaIdx  = Math.floor(i / 40);            // area 0-24
+// 500 showrooms: 20 per area (25 areas × 20 = 500)
+// Each group of 5 showrooms inside an area shares one supervisor (20 showrooms ÷ 4 supervisors = 5)
+const SHOWROOMS = Array.from({ length: 500 }, (_, i) => {
+  const areaIdx  = Math.floor(i / 20);            // area 0-24
   const area     = AREAS[areaIdx];
-  const supLocal = Math.floor((i % 40) / 5);      // supervisor slot 0-7 within the area
-  const supIdx   = areaIdx * 8 + supLocal;
+  const supLocal = Math.floor((i % 20) / 5);      // supervisor slot 0-3 within the area
+  const supIdx   = areaIdx * 4 + supLocal;
   const sfx      = _pick(_SFX, _ds(_dsk(i, 77)));
   return {
     id:           `sh${i + 1}`,
@@ -101,8 +101,8 @@ const SHOWROOMS = Array.from({ length: 1000 }, (_, i) => {
   };
 });
 
-// 1000 sellers: 1 per showroom
-const SELLERS = Array.from({ length: 1000 }, (_, i) => {
+// 500 sellers: 1 per showroom
+const SELLERS = Array.from({ length: 500 }, (_, i) => {
   const showroom   = SHOWROOMS[i];
   const f1  = _ds(_dsk(i, 11, 100));
   const f2  = _ds(_dsk(i, 22, 200));
@@ -332,6 +332,68 @@ function scalePeriodCount(base: number, year: number, month: number, period: "da
   if (period === "year") return base * 12;
   if (period === "month") return base;
   return Math.max(1, Math.round(base / getDaysInMonth(year, month)));
+}
+
+// ── Date-range helpers (used when viewMode==="table") ──────────────────────
+function sellerRangeSales(selIdx: number, from: string, to: string): number {
+  let total = 0;
+  let [y, m] = [parseInt(from.slice(0, 4)), parseInt(from.slice(5, 7)) - 1];
+  const [endY, endM] = [parseInt(to.slice(0, 4)), parseInt(to.slice(5, 7)) - 1];
+  while (y < endY || (y === endY && m <= endM)) {
+    const days = getDaysInMonth(y, m);
+    const monthData = genSellerMonthData(selIdx, y, m);
+    for (let d = 1; d <= days; d++) {
+      const dt = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dt >= from && dt <= to) total += monthData[d - 1].current;
+    }
+    if (++m > 11) { m = 0; y++; }
+  }
+  return total;
+}
+function sellerRangePrevSales(selIdx: number, from: string, to: string): number {
+  let total = 0;
+  let [y, m] = [parseInt(from.slice(0, 4)), parseInt(from.slice(5, 7)) - 1];
+  const [endY, endM] = [parseInt(to.slice(0, 4)), parseInt(to.slice(5, 7)) - 1];
+  while (y < endY || (y === endY && m <= endM)) {
+    const days = getDaysInMonth(y, m);
+    const monthData = genSellerMonthData(selIdx, y, m);
+    for (let d = 1; d <= days; d++) {
+      const dt = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dt >= from && dt <= to) total += monthData[d - 1].prev;
+    }
+    if (++m > 11) { m = 0; y++; }
+  }
+  return total;
+}
+function sellerRangeTarget(selIdx: number, from: string, to: string): number {
+  let total = 0;
+  let [y, m] = [parseInt(from.slice(0, 4)), parseInt(from.slice(5, 7)) - 1];
+  const [endY, endM] = [parseInt(to.slice(0, 4)), parseInt(to.slice(5, 7)) - 1];
+  while (y < endY || (y === endY && m <= endM)) {
+    const daysInM = getDaysInMonth(y, m);
+    let inRange = 0;
+    for (let d = 1; d <= daysInM; d++) {
+      const dt = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dt >= from && dt <= to) inRange++;
+    }
+    total += (SELLERS[selIdx].target * inRange) / daysInM;
+    if (++m > 11) { m = 0; y++; }
+  }
+  return total;
+}
+function scaleRangeCount(base: number, from: string, to: string): number {
+  let days = 0;
+  let [y, m] = [parseInt(from.slice(0, 4)), parseInt(from.slice(5, 7)) - 1];
+  const [endY, endM] = [parseInt(to.slice(0, 4)), parseInt(to.slice(5, 7)) - 1];
+  while (y < endY || (y === endY && m <= endM)) {
+    const daysInM = getDaysInMonth(y, m);
+    for (let d = 1; d <= daysInM; d++) {
+      const dt = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dt >= from && dt <= to) days++;
+    }
+    if (++m > 11) { m = 0; y++; }
+  }
+  return Math.max(1, Math.round(base * days / 30));
 }
 
 // Calendar day achievement %s (uses per-seller aggregate for the filtered set)
@@ -713,7 +775,7 @@ function DrillTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden mx-2">
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
         <h3 className="text-sm font-bold text-neutral-800">{title}</h3>
         <div className="flex items-center gap-2">
@@ -1434,26 +1496,48 @@ export default function SalesPerformancePage({ onBack }: Props) {
   const [tablePage, setTablePage] = useState(1);
   const TABLE_PAGE_SIZE = 40;
 
-  // Scroll collapse (table view only)
+  // Scroll collapse
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
+  const collapsedRef = useRef(false);
+  const animLock = useRef(false); // locked during animation to prevent layout-shift loop
 
   useEffect(() => {
+    let rafId: number | null = null;
     const el = scrollRef.current;
-    if (!el) return;
-    lastScrollY.current = el.scrollTop;
-    const handleScroll = () => {
-      const currentY = el.scrollTop;
-      if (currentY > 60 && currentY > lastScrollY.current) {
-        setHeaderCollapsed(true);
-      } else if (currentY < lastScrollY.current - 5) {
-        setHeaderCollapsed(false);
-      }
-      lastScrollY.current = currentY;
+
+    const onScroll = () => {
+      if (rafId !== null || animLock.current) return;
+      rafId = requestAnimationFrame(() => {
+        const currentY = (el && el.scrollTop > 0) ? el.scrollTop : window.scrollY;
+        const diff = currentY - lastScrollY.current;
+
+        if (!collapsedRef.current && currentY > 60 && diff > 6) {
+          collapsedRef.current = true;
+          animLock.current = true;
+          setHeaderCollapsed(true);
+          setTimeout(() => { animLock.current = false; }, 350);
+        } else if (collapsedRef.current && diff < -8) {
+          collapsedRef.current = false;
+          animLock.current = true;
+          setHeaderCollapsed(false);
+          setTimeout(() => { animLock.current = false; }, 350);
+        }
+
+        lastScrollY.current = currentY;
+        rafId = null;
+      });
     };
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
+
+    el?.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      el?.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Calendar
@@ -1499,6 +1583,15 @@ export default function SalesPerformancePage({ onBack }: Props) {
 
   // Dynamic KPIs — recalculate when period / month / year / day / filter changes
   const periodKpis = useMemo(() => {
+    if (viewMode === "table") {
+      const sales     = filteredIdxs.reduce((s, si) => s + sellerRangeSales(si, dateFrom, dateTo), 0);
+      const prevSales = filteredIdxs.reduce((s, si) => s + sellerRangePrevSales(si, dateFrom, dateTo), 0);
+      const target    = filteredIdxs.reduce((s, si) => s + sellerRangeTarget(si, dateFrom, dateTo), 0);
+      const invoices  = filteredIdxs.reduce((s, si) => s + scaleRangeCount(SELLERS[si].invoices, dateFrom, dateTo), 0);
+      const pieces    = filteredIdxs.reduce((s, si) => s + scaleRangeCount(SELLERS[si].pieces, dateFrom, dateTo), 0);
+      const customers = filteredIdxs.reduce((s, si) => s + scaleRangeCount(SELLERS[si].customers, dateFrom, dateTo), 0);
+      return { sales, prevSales, target, invoices, pieces, customers };
+    }
     const sales     = filteredIdxs.reduce((s, si) => s + sellerPeriodSales(si, year, month, period, selectedDay), 0);
     const prevSales = filteredIdxs.reduce((s, si) => s + sellerPeriodPrevSales(si, year, month, period, selectedDay), 0);
     const target    = filteredIdxs.reduce((s, si) => s + sellerPeriodTarget(si, year, month, period), 0);
@@ -1506,7 +1599,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
     const pieces    = filteredIdxs.reduce((s, si) => s + scalePeriodCount(SELLERS[si].pieces, year, month, period), 0);
     const customers = filteredIdxs.reduce((s, si) => s + scalePeriodCount(SELLERS[si].customers, year, month, period), 0);
     return { sales, prevSales, target, invoices, pieces, customers };
-  }, [filteredIdxs, period, year, month, selectedDay]);
+  }, [filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo]);
 
   const totalSales    = periodKpis.sales;
   const totalTarget   = periodKpis.target;
@@ -1550,19 +1643,20 @@ export default function SalesPerformancePage({ onBack }: Props) {
     });
   }, [filteredSellers, filteredIdxs, filterType, period, year, month, selectedDay]);
 
-  // Table data — period-aware rows
+  // Table data — period-aware rows (range-aware when viewMode=table)
   const tableRows = useMemo(() =>
     filteredSellers.map((s, i) => {
-      const si      = filteredIdxs[i];
-      const sales   = sellerPeriodSales(si, year, month, period, selectedDay);
-      const target  = sellerPeriodTarget(si, year, month, period);
-      const prev    = sellerPeriodPrevSales(si, year, month, period, selectedDay);
-      const invoices  = scalePeriodCount(s.invoices, year, month, period);
-      const pieces    = scalePeriodCount(s.pieces, year, month, period);
-      const customers = scalePeriodCount(s.customers, year, month, period);
+      const si = filteredIdxs[i];
+      const useRange = viewMode === "table";
+      const sales     = useRange ? sellerRangeSales(si, dateFrom, dateTo)     : sellerPeriodSales(si, year, month, period, selectedDay);
+      const target    = useRange ? sellerRangeTarget(si, dateFrom, dateTo)    : sellerPeriodTarget(si, year, month, period);
+      const prev      = useRange ? sellerRangePrevSales(si, dateFrom, dateTo) : sellerPeriodPrevSales(si, year, month, period, selectedDay);
+      const invoices  = useRange ? scaleRangeCount(s.invoices, dateFrom, dateTo)  : scalePeriodCount(s.invoices, year, month, period);
+      const pieces    = useRange ? scaleRangeCount(s.pieces, dateFrom, dateTo)    : scalePeriodCount(s.pieces, year, month, period);
+      const customers = useRange ? scaleRangeCount(s.customers, dateFrom, dateTo) : scalePeriodCount(s.customers, year, month, period);
       return { ...s, sales, target, prevSales: prev, invoices, pieces, customers };
     }),
-    [filteredSellers, filteredIdxs, period, year, month, selectedDay]
+    [filteredSellers, filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo]
   );
 
   const tableData = useMemo(() => {
@@ -1598,16 +1692,63 @@ export default function SalesPerformancePage({ onBack }: Props) {
   }
 
   return (
-    <div dir="rtl" className="w-full min-h-screen bg-neutral-0 flex flex-col">
+    <div dir="rtl" className="min-h-screen bg-neutral-0 flex flex-col -mx-4 -mt-4 w-[calc(100%+2rem)] sm:mx-0 sm:mt-0 sm:w-full">
       {/* ── Fixed Header (filters + tabs) ── */}
-      <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100">
-        <div className="max-w-[1400px] mx-auto px-1 sm:px-2">
+      <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+        <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
+          {/* Filter type tabs */}
+          <div className="px-2 sm:px-6 py-1.5 sm:py-2 border-b border-neutral-100 flex items-center gap-1.5 sm:gap-2">
+            <div className="flex flex-1 items-center gap-0.5 rounded-xl p-0.5 min-w-0">
+            {([["team","الفريق"],["areas","المناطق"],["supervisors","المشرفين"],["showrooms","المعارض"],["sellers","البائعين"]] as [FilterType, string][]).map(([type, label]) => (
+              <motion.button
+                key={type}
+                onClick={() => { setFilterType(type); resetTableFilters(); }}
+                layout
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className={cn(
+                  "flex flex-1 items-center justify-center px-1.5 sm:px-3 py-1.5 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-colors duration-200 min-w-0",
+                  filterType === type
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "text-neutral-500 hover:text-neutral-800 hover:bg-neutral-200/60"
+                )}
+              >
+                <span className="truncate">{label}</span>
+              </motion.button>
+            ))}
+          </div>
+          </div>
+
           {/* Filters and view mode */}
-          <div className="px-2 sm:px-6 py-2 border-b border-neutral-100">
-            <div className="flex items-center gap-3 sm:gap-4 mb-1 pb-[10px] w-full overflow-x-auto">
+          <AnimatePresence initial={false}>
+          {(!headerCollapsed || window.innerWidth >= 768) && (
+          <motion.div
+            key="filters-row"
+            variants={{
+              show: {
+                height: "auto", opacity: 1,
+                transition: {
+                  height: { type: "spring", stiffness: 700, damping: 42, mass: 0.4 },
+                  opacity: { duration: 0.07, ease: "easeOut" }
+                }
+              },
+              hide: {
+                height: 0, opacity: 0,
+                transition: {
+                  height: { type: "spring", stiffness: 500, damping: 38, mass: 0.8 },
+                  opacity: { duration: 0.1, ease: "easeIn" }
+                }
+              }
+            }}
+            initial="hide"
+            animate="show"
+            exit="hide"
+            className="overflow-hidden px-2 sm:px-6"
+          >
+          <div className="py-1 pb-0 mb-1">
+            <div className="flex items-center gap-3 sm:gap-4 w-full overflow-x-auto">
               {viewMode === "table" ? (
                 /* ── Table view: 5-level cascading filters + date range ── */
-                <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto min-w-0 flex-1">
+                <div className="flex items-center gap-1 sm:gap-4 overflow-x-auto min-w-0 flex-1 pb-2 ">
                   {/* Clear button */}
                   {hasActiveTableFilter && (
                     <button
@@ -1679,7 +1820,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                   <div className="flex items-center gap-3 sm:gap-4 w-full overflow-x-auto">
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="text-xs sm:text-sm font-bold text-neutral-700">مؤشر أداء</span>
-                      <span className="text-[9px] sm:text-[10px] text-neutral-400">
+                      <span className="text-[11px] sm:text-[10px] text-neutral-400">
                         {period === "day"
                           ? `${selectedDay} ${MONTHS_AR[month]} ${toArabicDigits(String(year))}`
                           : period === "month"
@@ -1723,42 +1864,22 @@ export default function SalesPerformancePage({ onBack }: Props) {
               </div>
             </div>
           </div>
-          
-          {/* Filter type tabs */}
-          <div className="px-2 sm:px-6 py-2 flex items-center gap-1.5 sm:gap-2">
-            <div className="flex flex-1 items-center gap-0.5 rounded-xl p-0.5 min-w-0">
-            {([["team","الفريق"],["areas","المناطق"],["supervisors","المشرفين"],["showrooms","المعارض"],["sellers","البائعين"]] as [FilterType, string][]).map(([type, label]) => (
-              <motion.button
-                key={type}
-                onClick={() => { setFilterType(type); resetTableFilters(); }}
-                layout
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={cn(
-                  "flex flex-1 items-center justify-center px-1.5 sm:px-3 py-1.5 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-colors duration-200 min-w-0",
-                  filterType === type
-                    ? "bg-neutral-900 text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 hover:bg-neutral-200/60"
-                )}
-              >
-                <span className="truncate">{label}</span>
-              </motion.button>
-            ))}
-          </div>
-
-          </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* ── Scrollable Content ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16">
-        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16 sm:pb-20">
+        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-2 sm:pt-2">
           {/* ── Calendar / Period Navigator ── */}
-          <div className="border-b border-neutral-100 px-1 sm:px-2 py-2.5 -mx-1 sm:-mx-2">
+          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm px-2.5 py-2.5 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-0.5 bg-neutral-100 rounded-xl p-0.5">
+              <div className="flex items-center gap-0.5 bg-white rounded-lg p-0.5 border border-neutral-200 ">
                 {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
                   <button key={p} onClick={() => setPeriod(p as Period)}
-                    className={cn("px-2 sm:px-2.5 py-1 rounded-[10px] text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap",
+                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] sm:text-[11px] font-semibold transition-all whitespace-nowrap",
                       period === p ? "bg-neutral-800 text-white shadow-sm" : "text-neutral-500 hover:text-neutral-700")}>
                     {l}
                   </button>
@@ -1788,11 +1909,11 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]"
                         )}
                         style={{
-                          backgroundColor: isSelected ? "#111111" : "#f4f4f5",
-                          border: isSelected ? "1.5px solid rgba(0,0,0,0.25)" : "1.5px solid transparent",
-                          boxShadow: isSelected ? "0 2px 8px rgba(0,0,0,0.18)" : "none",
+                          backgroundColor: isSelected ? "#111111" : "#ffffff",
+                          border: isSelected ? "0px solid rgba(0,0,0,0.25)" : "0px solid #e5e5e5",
+                          boxShadow: isSelected ? "0 0px 0px rgba(0,0,0,0.18)" : "0 0px 0px rgba(0,0,0,0.08)",
                         }}>
-                        <span className="text-[10px] sm:text-[11px] font-bold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : "#404040" }}>{mName}</span>
+                        <span className="text-[10px] sm:text-[11px] font-bold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : "#030303" }}>{mName}</span>
                         <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : color }}>{pct}%</span>
                         <div className="w-full h-1 sm:h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
                           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isSelected ? "#ffffff" : color }} />
@@ -1805,15 +1926,17 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     const isYearSelected = period === "year";
                     return (
                       <button onClick={() => setPeriod("year")}
-                        className="flex flex-col items-center gap-1 rounded-xl px-3 py-2.5 transition-all shrink-0 active:scale-95"
+                        className={cn(
+                          "flex flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all shrink-0 active:scale-95",
+                          "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]"
+                        )}
                         style={{
-                          minWidth: 64,
-                          backgroundColor: isYearSelected ? "#111111" : "#f4f4f5",
+                          backgroundColor: isYearSelected ? "#111111" : "#ffffff",
                           border: isYearSelected ? "1.5px solid rgba(0,0,0,0.25)" : "1.5px solid transparent",
                           boxShadow: isYearSelected ? "0 2px 8px rgba(0,0,0,0.18)" : "none",
                         }}>
-                        <span className="text-[11px] font-bold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : "#B21063" }}>السنوي</span>
-                        <span className="text-sm font-extrabold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : pctColor(yearPct) }}>{yearPct}%</span>
+                        <span className="text-[10px] sm:text-[11px] font-bold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : "#B21063" }}>السنوي</span>
+                        <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : pctColor(yearPct) }}>{yearPct}%</span>
                         <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isYearSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
                           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(yearPct, 100)}%`, backgroundColor: isYearSelected ? "#ffffff" : "#B21063" }} />
                         </div>
@@ -1840,11 +1963,11 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           isSelected ? "bg-neutral-900 text-white shadow-sm" : isToday ? "bg-blue-50 border border-blue-200" : "bg-neutral-50 hover:bg-neutral-100"
                         )}
                         style={{
-                          backgroundColor: isSelected ? "#111111" : "#f4f4f5",
+                          backgroundColor: isSelected ? "#111111" : "#ffffff",
                           border: isSelected ? "1.5px solid rgba(0,0,0,0.25)" : "1.5px solid transparent",
                           boxShadow: isSelected ? "0 2px 8px rgba(0,0,0,0.18)" : "none",
                         }}>
-                        <span className="text-[9px] font-semibold leading-none" style={{ color: isSelected ? "rgba(255,255,255,0.65)" : "#737373" }}>{dayName}</span>
+                        <span className="text-[9px] font-semibold leading-none" style={{ color: isSelected ? "rgba(255, 255, 255, 0.65)" : "#737373" }}>{dayName}</span>
                         <span className="text-[13px] font-extrabold leading-tight" style={{ color: isSelected ? "#ffffff" : "#1a1a1a" }}>{day}</span>
                         <span className="text-[10px] font-bold leading-none" style={{ color: isSelected ? "#ffffff" : color }}>{pct}%</span>
                         <div className="w-4/5 h-1.5 rounded-full overflow-hidden mt-0.5" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
@@ -1893,7 +2016,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
           </div>
         )}
 
-                {viewMode !== "table" && <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2.5 pb-1 overflow-visible">
+                {viewMode !== "table" && <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-1 sm:gap-2.5 pb-2 overflow-visible mx-2.5 sm:mx-0">
           <KpiCard title="إجمالي المبيعات" value={formatNum(totalSales)} sub={`الهدف: ${formatNum(totalTarget)}`} icon={ShoppingBag} color="#00C9A7" progress={achievementPct} />
           <KpiCard title="نسبة التحقيق" value={`${achievementPct}%`} sub={`نمو: ${growthPct >= 0 ? "+" : ""}${growthPct}%`} icon={TrendingUp} color={pctColor(achievementPct)} />
           <KpiCard title="الفواتير" value={formatFull(totalInvoices)} sub={`متوسط: ${formatFull(avgInvoice)}`} icon={FileText} color="#4D8AFF" />
@@ -1907,7 +2030,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
         <AnimatePresence mode="wait">
           {viewMode === "analytics" && (
             <motion.div key="analytics" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}
-              className="space-y-4">
+              className="space-y-4 mx-2.5 sm:mx-0">
 
               {/* Row: bar charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -9,6 +9,7 @@ import TransactionDetailsPage from "./components/TransactionDetailsPage";
 import ExitPermitForm from "./components/ExitPermitForm";
 import TransportAllowanceForm from "./components/TransportAllowanceForm";
 import SalesPerformancePage from "./components/SalesPerformancePage";
+import TasksPage from "./components/TasksPage";
 import { supabase } from "./lib/supabase";
 import { Bell, Search, Settings, Menu, LogOut, Inbox, Send, FileText, Users, ShieldCheck, ClipboardList, Award, Accessibility, GaugeCircle, Sparkles, ChevronRight, ChevronLeft, ChevronDown, Upload, X, Save, Check, ArrowRight, Tag, Calendar, Building2, Shield, AlertTriangle, Clock, CheckCircle, Phone, RefreshCcw, Archive, FilePlus, Mail, BarChart3, LayoutDashboard, ArrowLeftRight, ExternalLink, Globe, Database, MessageSquare, TrendingUp, FileSpreadsheet, Briefcase, UserCheck, CreditCard, Home, Car, Plane, Heart, GraduationCap, Baby, MapPin, Zap, User, Lock, Eye, EyeOff, Smartphone, CircleUser as UserCircle, ListTodo, Megaphone, Languages, Type } from "lucide-react";
 
@@ -975,7 +976,7 @@ export default function ResponsiveDashboard() {
     dark ? "dark bg-neutral-950 text-neutral-100" : "text-neutral-900"
   ), [dark]);
 
-  const backgroundStyle = dark ? {} : { backgroundColor: '#FAFCFF' };
+  const backgroundStyle = dark ? {} : { backgroundColor: '#EEF1F8' };
 
   // عناوين الصفحات
   const titlesMap = (() => {
@@ -1744,7 +1745,7 @@ export default function ResponsiveDashboard() {
   function renderWelcomePage() {
     const welcomeCards = [
       { title: "بوابة المعاملات", subtitle: "إدارة المعاملات والمكاتبات", icon: FileText, accent: "from-blue-500/50 to-sky-600/50", action: "دخول", onClick: () => setCurrentPage("main-dashboard") },
-      { title: "المهام وإدارة الفريق", subtitle: "متابعة المهام والفرق", icon: Users, accent: "from-emerald-500/50 to-green-600/50", action: "دخول" },
+      { title: "المهام وإدارة الفريق", subtitle: "متابعة المهام والفرق", icon: Users, accent: "from-emerald-500/50 to-green-600/50", action: "دخول", onClick: () => { setCurrentPage("main-dashboard"); setView("tasks"); } },
       { title: "نظام الحضور والغياب", subtitle: "تتبع الحضور والانصراف", icon: Clock, accent: "from-amber-500/50 to-orange-500/50", action: "دخول" },
       { title: "إحصائيات المبيعات", subtitle: "تقارير ومؤشرات الأداء", icon: BarChart3, accent: "from-rose-500/50 to-pink-600/50", action: "دخول", onClick: () => { setCurrentPage("main-dashboard"); setView("sales_kpi"); setActiveKey("sales_kpi"); } },
       { title: "التعميمات والتنبيهات", subtitle: "الإشعارات والتعميمات", icon: Bell, accent: "from-red-500/50 to-rose-500/50", action: "دخول" },
@@ -1779,7 +1780,7 @@ export default function ResponsiveDashboard() {
           </motion.div>
 
           {/* البطاقات */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-3 sm:gap-6 lg:grid-cols-3">
             {welcomeCards.map((card, idx) => (
               <motion.button
                 key={card.title}
@@ -1789,23 +1790,23 @@ export default function ResponsiveDashboard() {
                 onClick={card.onClick || (() => console.log(`تم النقر على: ${card.title}`))}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                <div className="relative h-full min-h-[120px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-200 bg-white shadow-md hover:shadow-2xl transition-all duration-300">
                   {/* طبقة التدرّج */}
                   <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-20 group-hover:opacity-30 blur-2xl transition", card.accent)} />
                   
-                  <div className="relative p-6 flex items-start gap-4 flex-1">
+                  <div className="relative p-3 sm:p-6 flex flex-col sm:flex-row items-start gap-2 sm:gap-4 flex-1">
                     <div className="shrink-0">
-                      <div className="size-14 rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-neutral-200/70 backdrop-blur flex items-center justify-center">
-                        <card.icon className="h-7 w-7" />
+                      <div className="size-8 sm:size-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-neutral-200/70 backdrop-blur flex items-center justify-center">
+                        <card.icon className="h-4 w-4 sm:h-7 sm:w-7" />
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-bold tracking-tight leading-6 text-gray-900 mb-2">{card.title}</h3>
-                      <p className="text-sm text-gray-600">{card.subtitle}</p>
+                      <h3 className="text-[11px] sm:text-lg font-bold tracking-tight leading-tight text-gray-900 mb-0.5 sm:mb-2">{card.title}</h3>
+                      <p className="hidden sm:block text-sm text-gray-600">{card.subtitle}</p>
                     </div>
                   </div>
                   
-                  <div className="px-6 pb-6 flex items-center justify-start text-sm mt-auto">
+                  <div className="px-3 sm:px-6 pb-3 sm:pb-6 flex items-center justify-start text-xs sm:text-sm mt-auto">
                     <span className="font-medium text-blue-600 group-hover:underline">{card.action}</span>
                   </div>
                 </div>
@@ -1841,7 +1842,7 @@ export default function ResponsiveDashboard() {
         
         {/* قسم الخدمات الأساسية */}
         <div>
-          <h2 className="text-lg font-bold mb-4 text-neutral-800">الخدمات الأساسية</h2>
+          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الخدمات الأساسية</h2>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
             {primaryCards.map((c) => ({ ...c, onAction: c.onAction?.bind(null, setView) })).map((card, idx) => (
               <motion.button
@@ -1852,25 +1853,22 @@ export default function ResponsiveDashboard() {
                 onClick={() => handleCardClick(card)}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[220px] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-shadow">
-                  {/* طبقة التدرّج المخفّف 50% */}
-                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-20 group-hover:opacity-30 blur-2xl transition", card.accent)} />
-                  <div className="relative p-5 flex items-start gap-4 flex-1">
-                    <div className="shrink-0">
-                      <div className="size-12 rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-neutral-200/70 backdrop-blur flex items-center justify-center">
-                        <card.icon className="h-6 w-6" />
+                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
+                  <div className="relative p-5 flex flex-col gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
+                        <card.icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{card.title}</span>
                       </div>
+                      {card.badge !== null && (
+                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
+                      )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-bold tracking-tight leading-6 text-gray-900">{card.title}</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">{card.subtitle}</p>
-                    </div>
-                    {card.badge !== null && (
-                      <span className="inline-flex items-center justify-center h-7 min-w-[1.75rem] px-2 text-xs font-semibold rounded-full text-white" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
-                    )}
+                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
                   </div>
-                  <div className="px-5 pb-4 flex items-center justify-start text-sm mt-auto">
-                    <span className="font-medium text-blue-600 group-hover:underline">{card.action}</span>
+                  <div className="px-5 pb-5 mt-auto">
+                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
                   </div>
                 </div>
               </motion.button>
@@ -1880,7 +1878,7 @@ export default function ResponsiveDashboard() {
 
         {/* قسم الخدمات الإضافية */}
         <div>
-          <h2 className="text-lg font-bold mb-4 text-neutral-800">الخدمات الإضافية</h2>
+          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الخدمات الإضافية</h2>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
             {regularCards.map((card, idx) => (
               <motion.button
@@ -1891,25 +1889,22 @@ export default function ResponsiveDashboard() {
                 onClick={() => handleCardClick(card)}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[220px] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-shadow">
-                  {/* طبقة التدرّج المخفّف 50% */}
-                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-20 group-hover:opacity-30 blur-2xl transition", card.accent)} />
-                  <div className="relative p-5 flex items-start gap-4 flex-1">
-                    <div className="shrink-0">
-                      <div className="size-12 rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-neutral-200/70 backdrop-blur flex items-center justify-center">
-                        <card.icon className="h-6 w-6" />
+                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
+                  <div className="relative p-5 flex flex-col gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
+                        <card.icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{card.title}</span>
                       </div>
+                      {card.badge !== null && (
+                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
+                      )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-bold tracking-tight leading-6 text-gray-900">{card.title}</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">{card.subtitle}</p>
-                    </div>
-                    {card.badge !== null && (
-                      <span className="inline-flex items-center justify-center h-7 min-w-[1.75rem] px-2 text-xs font-semibold rounded-full text-white" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
-                    )}
+                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
                   </div>
-                  <div className="px-5 pb-4 flex items-center justify-start text-sm mt-auto">
-                    <span className="font-medium text-blue-600 group-hover:underline">{card.action}</span>
+                  <div className="px-5 pb-5 mt-auto">
+                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
                   </div>
                 </div>
               </motion.button>
@@ -1919,7 +1914,7 @@ export default function ResponsiveDashboard() {
 
         {/* قسم الروابط الخارجية */}
         <div>
-          <h2 className="text-lg font-bold mb-4 text-neutral-800">الروابط الخارجية</h2>
+          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الروابط الخارجية</h2>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
             {externalLinksCards.map((card, idx) => (
               <motion.button
@@ -1930,25 +1925,22 @@ export default function ResponsiveDashboard() {
                 onClick={() => handleCardClick(card)}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[220px] flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm hover:shadow-xl transition-shadow">
-                  {/* طبقة التدرّج المخفّف 50% */}
-                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-20 group-hover:opacity-30 blur-2xl transition", card.accent)} />
-                  <div className="relative p-5 flex items-start gap-4 flex-1">
-                    <div className="shrink-0">
-                      <div className="size-12 rounded-2xl bg-gradient-to-br from-white/70 to-white/30 border border-neutral-200/70 backdrop-blur flex items-center justify-center">
-                        <card.icon className="h-6 w-6" />
+                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
+                  <div className="relative p-5 flex flex-col gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
+                        <card.icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{card.title}</span>
                       </div>
+                      {card.badge !== null && (
+                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
+                      )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-bold tracking-tight leading-6 text-gray-900">{card.title}</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">{card.subtitle}</p>
-                    </div>
-                    {card.badge !== null && (
-                      <span className="inline-flex items-center justify-center h-7 min-w-[1.75rem] px-2 text-xs font-semibold rounded-full text-white" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
-                    )}
+                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
                   </div>
-                  <div className="px-5 pb-4 flex items-center justify-start text-sm mt-auto">
-                    <span className="font-medium text-blue-600 group-hover:underline">{card.action}</span>
+                  <div className="px-5 pb-5 mt-auto">
+                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
                   </div>
                 </div>
               </motion.button>
@@ -2093,6 +2085,7 @@ export default function ResponsiveDashboard() {
     if (view === "inbox") return renderInboxView();
     if (view === "transaction_details") return renderTransactionDetailsView();
     if (view === "sales_kpi") return <SalesPerformancePage onBack={() => setView("dashboard")} />;
+    if (view === "tasks") return <TasksPage onBack={() => setView("dashboard")} />;
     return renderGenericPage(view);
   }
 
@@ -2196,143 +2189,28 @@ export default function ResponsiveDashboard() {
     return (
       <div dir="rtl" className={rootClass} style={backgroundStyle}>
 
-        {/* ── Top Bar ── */}
-        <header className="hidden md:flex sticky top-0 z-50 backdrop-blur border-b border-neutral-200" style={{ backgroundColor: '#FAFCFF' }}>
-          <div className="px-3 sm:px-6 lg:px-8">
-            <div className="h-14 flex items-center gap-2">
-
-              {/* زر القائمة الجانبية (ديسكتوب) */}
-              <button onClick={() => setSidebarCollapsed((v) => !v)} className="hidden md:inline-flex p-2 rounded-xl border border-neutral-200 hover:bg-neutral-100 shrink-0" aria-label="طي القائمة">
-                <Menu className="h-5 w-5" />
-              </button>
-
-              {/* الشعار */}
-              <div className="flex items-center shrink-0">
-                <img
-                  src="/logonew.svg"
-                  alt="الشعار"
-                  className="h-7 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setView('dashboard')}
-                  onError={(e) => { e.currentTarget.src = '/vite.svg'; }}
-                />
-              </div>
-
-              {/* البحث (ديسكتوب) */}
-              <div className="hidden md:flex flex-1 items-center px-4">
-                <div className="relative w-full max-w-xs">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                  <input placeholder="ابحث عن خدمة أو مستند..." className="w-full rounded-2xl pr-9 pl-4 py-2 bg-neutral-100 border border-neutral-200 outline-none text-sm focus:ring-2 ring-[#B21063]/30 focus:border-[#B21063]/40" />
-                </div>
-              </div>
-
-              <div className="ms-auto flex items-center gap-1.5 sm:gap-2">
-                {/* بحث موبايل */}
-                <button className="md:hidden p-2 rounded-xl border border-neutral-200 hover:bg-neutral-100">
-                  <Search className="h-5 w-5 text-neutral-600" />
-                </button>
-
-                {/* الجرس */}
-                <button className="relative p-2 rounded-xl hover:bg-neutral-100 border border-neutral-200" aria-label="التنبيهات">
-                  <Bell className="h-5 w-5 text-neutral-600" />
-                  <span className="absolute -top-0.5 -left-0.5 h-4 min-w-[1rem] px-1 rounded-full bg-red-600 text-white text-[9px] font-bold flex items-center justify-center">3</span>
-                </button>
-
-                {/* حسابي */}
-                <div className="relative">
-                  <button
-                    onClick={() => setAccountMenuOpen(v => !v)}
-                    className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-neutral-200 hover:bg-neutral-100 transition-colors"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-[#B21063]/10 flex items-center justify-center shrink-0">
-                      <UserCircle className="h-5 w-5 text-[#B21063]" />
-                    </div>
-                    <span className="hidden sm:block text-sm font-semibold text-neutral-700">حسابي</span>
-                    <ChevronDown className={cn("h-4 w-4 text-neutral-400 transition-transform duration-200", accountMenuOpen ? "rotate-180" : "")} />
-                  </button>
-
-                  {/* القائمة المنسدلة */}
-                  {accountMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-[55]" onClick={() => setAccountMenuOpen(false)} />
-                      <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden">
-                        <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50">
-                          <p className="text-sm font-bold text-neutral-800">محمد العبدالله</p>
-                          <p className="text-xs text-neutral-500">مدير المبيعات</p>
-                        </div>
-                        <div className="py-1">
-                          <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                            <UserCircle className="h-4 w-4 text-neutral-400" />
-                            الملف الشخصي
-                          </button>
-                          <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                            <Settings className="h-4 w-4 text-neutral-400" />
-                            الإعدادات
-                          </button>
-                          {/* حجم الخط */}
-                          <div className="px-4 py-3 border-t border-neutral-100">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <Type className="h-4 w-4 text-neutral-400 shrink-0" />
-                                <span className="text-sm text-neutral-700">حجم الخط</span>
-                              </div>
-                              <span className="text-xs font-bold tabular-nums" style={{ color: '#B21063' }}>{fontScale}%</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[11px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
-                              <div className="relative flex-1">
-                                <input
-                                  type="range"
-                                  min={75}
-                                  max={150}
-                                  step={1}
-                                  value={fontScale}
-                                  onChange={(e) => setFontScale(Number(e.target.value))}
-                                  className="font-range w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none"
-                                  style={{
-                                    background: `linear-gradient(to left, #e5e7eb ${100 - ((fontScale - 75) / 75) * 100}%, #B21063 ${100 - ((fontScale - 75) / 75) * 100}%)`,
-                                  }}
-                                />
-                              </div>
-                              <span className="text-[15px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
-                            </div>
-                            <div className="flex justify-between mt-1.5">
-                              <button onClick={() => setFontScale(75)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أصغر</button>
-                              <button onClick={() => setFontScale(100)} className="text-[10px] text-neutral-400 hover:text-neutral-600 font-semibold">افتراضي</button>
-                              <button onClick={() => setFontScale(150)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أكبر</button>
-                            </div>
-                          </div>
-
-                          <button onClick={() => setAccountMenuOpen(false)}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                            <Languages className="h-4 w-4 text-neutral-400" />
-                            <span>اللغة</span>
-                            <span className="mr-auto text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">العربية</span>
-                          </button>
-                        </div>
-                        <div className="border-t border-neutral-100 py-1">
-                          <button onClick={() => { setCurrentPage("login"); setAccountMenuOpen(false); }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
-                            <LogOut className="h-4 w-4" />
-                            تسجيل الخروج
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Body */}
-        <div className="py-4 pb-24 md:pb-6 flex gap-4 lg:gap-6 px-3 sm:px-6 lg:px-8">
+        <div className="py-4 pb-24 md:pb-6 flex md:gap-[100px] px-4 sm:px-6 md:pr-6 lg:pr-8 md:pl-[100px]" style={{ backgroundColor: "#F4F8FE" }}>
           {/* Sidebar (ديسكتوب فقط) */}
           <aside className={cn("hidden md:flex flex-col transition-all duration-300 shrink-0", sidebarCollapsed ? "w-14" : "w-52")}>
-            <nav className="relative rounded-2xl p-2 bg-white border border-neutral-200 shadow-sm flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto pe-1">
+            <nav className="relative rounded-2xl p-2 bg-white/70 backdrop-blur border border-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex-1 overflow-hidden flex flex-col">
+              {/* الشعار وزر الطي */}
+              <div className={cn("flex items-center mb-2 px-1 shrink-0", sidebarCollapsed ? "justify-center" : "justify-between")}>
+                {!sidebarCollapsed && (
+                  <img
+                    src="/logonew.svg"
+                    alt="الشعار"
+                    className="h-7 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setView('dashboard')}
+                    onError={(e) => { e.currentTarget.src = '/vite.svg'; }}
+                  />
+                )}
+                <button onClick={() => setSidebarCollapsed((v) => !v)} className="p-1.5 rounded-xl border border-neutral-200 hover:bg-neutral-100 shrink-0" aria-label="طي القائمة">
+                  <Menu className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto pe-1">
                 {sidebarGroups.map((group) => (
                   <div key={group.label} className="mb-1">
                     <button onClick={() => toggleGroup(group.label)} className={cn("w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold tracking-widest uppercase text-neutral-400", sidebarCollapsed && "justify-center")} title={sidebarCollapsed ? group.label : undefined}>
@@ -2365,10 +2243,95 @@ export default function ResponsiveDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="sticky bottom-0 -mb-2 mt-2 bg-gradient-to-t from-white/90 to-transparent pt-2">
-                <button onClick={() => setSidebarCollapsed((v) => !v)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 hover:bg-neutral-50 text-sm text-neutral-500 transition-colors">
-                  {sidebarCollapsed ? (<><ChevronLeft className="h-4 w-4" /><span>توسيع</span></>) : (<><ChevronRight className="h-4 w-4" /><span>طيّ</span></>)}
+
+              {/* حسابي - أسفل القائمة الجانبية */}
+              <div className="shrink-0 mt-2 pt-2 border-t border-neutral-100 relative">
+                <button
+                  onClick={() => setAccountMenuOpen(v => !v)}
+                  className={cn("w-full flex items-center gap-2 px-2 py-2 rounded-xl hover:bg-neutral-100 transition-colors", sidebarCollapsed ? "justify-center" : "")}
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#B21063]/10 flex items-center justify-center shrink-0">
+                    <UserCircle className="h-5 w-5 text-[#B21063]" />
+                  </div>
+                  {!sidebarCollapsed && (
+                    <>
+                      <div className="flex flex-col items-start flex-1 min-w-0">
+                        <span className="text-sm font-semibold text-neutral-700 truncate">محمد العبدالله</span>
+                        <span className="text-xs text-neutral-400">مدير المبيعات</span>
+                      </div>
+                      <ChevronDown className={cn("h-4 w-4 text-neutral-400 transition-transform duration-200 shrink-0", accountMenuOpen ? "rotate-180" : "")} />
+                    </>
+                  )}
                 </button>
+                {accountMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[55]" onClick={() => setAccountMenuOpen(false)} />
+                    <div className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden">
+                      <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50">
+                        <p className="text-sm font-bold text-neutral-800">محمد العبدالله</p>
+                        <p className="text-xs text-neutral-500">مدير المبيعات</p>
+                      </div>
+                      <div className="py-1">
+                        <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                          <UserCircle className="h-4 w-4 text-neutral-400" />
+                          الملف الشخصي
+                        </button>
+                        <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                          <Settings className="h-4 w-4 text-neutral-400" />
+                          الإعدادات
+                        </button>
+                        {/* حجم الخط */}
+                        <div className="px-4 py-3 border-t border-neutral-100">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Type className="h-4 w-4 text-neutral-400 shrink-0" />
+                              <span className="text-sm text-neutral-700">حجم الخط</span>
+                            </div>
+                            <span className="text-xs font-bold tabular-nums" style={{ color: '#B21063' }}>{fontScale}%</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
+                            <div className="relative flex-1">
+                              <input
+                                type="range"
+                                min={75}
+                                max={150}
+                                step={1}
+                                value={fontScale}
+                                onChange={(e) => setFontScale(Number(e.target.value))}
+                                className="font-range w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none"
+                                style={{
+                                  background: `linear-gradient(to left, #e5e7eb ${100 - ((fontScale - 75) / 75) * 100}%, #B21063 ${100 - ((fontScale - 75) / 75) * 100}%)`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-[15px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
+                          </div>
+                          <div className="flex justify-between mt-1.5">
+                            <button onClick={() => setFontScale(75)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أصغر</button>
+                            <button onClick={() => setFontScale(100)} className="text-[10px] text-neutral-400 hover:text-neutral-600 font-semibold">افتراضي</button>
+                            <button onClick={() => setFontScale(150)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أكبر</button>
+                          </div>
+                        </div>
+                        <button onClick={() => setAccountMenuOpen(false)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                          <Languages className="h-4 w-4 text-neutral-400" />
+                          <span>اللغة</span>
+                          <span className="mr-auto text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">العربية</span>
+                        </button>
+                      </div>
+                      <div className="border-t border-neutral-100 py-1">
+                        <button onClick={() => { setCurrentPage("login"); setAccountMenuOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                          <LogOut className="h-4 w-4" />
+                          تسجيل الخروج
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </nav>
           </aside>
