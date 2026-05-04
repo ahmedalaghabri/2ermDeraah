@@ -1872,9 +1872,9 @@ export default function SalesPerformancePage({ onBack }: Props) {
 
       {/* ── Scrollable Content ── */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16 sm:pb-20">
-        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-2 sm:pt-2">
+        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-0 sm:pt-2">
           {/* ── Calendar / Period Navigator ── */}
-          <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm px-2 sm:px-6 py-2.5 mb-4">
+          <div className="border-b border-neutral-100 px-2.5 py-2.5 -mx-1">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-0.5 bg-white rounded-lg p-0.5 border border-neutral-200 ">
                 {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
