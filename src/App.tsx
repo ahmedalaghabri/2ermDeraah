@@ -2210,7 +2210,7 @@ export default function ResponsiveDashboard() {
                   <Menu className="h-4 w-4" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto pe-1">
+              <div className="flex-1 overflow-y-auto pe-1 pt-[200px]">
                 {sidebarGroups.map((group) => (
                   <div key={group.label} className="mb-1">
                     <button onClick={() => toggleGroup(group.label)} className={cn("w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold tracking-widest uppercase text-neutral-400", sidebarCollapsed && "justify-center")} title={sidebarCollapsed ? group.label : undefined}>
@@ -2343,8 +2343,17 @@ export default function ResponsiveDashboard() {
         </div>
 
         {/* ── Bottom Navigation (جوال فقط) ── */}
-        <nav className="fixed bottom-0 inset-x-0 z-30 md:hidden bg-white border-t border-neutral-200 safe-area-bottom">
-          <div className="flex items-stretch h-16">
+        <nav className="fixed bottom-4 inset-x-0 z-30 md:hidden flex justify-center px-4 pointer-events-none">
+          <div
+            className="flex items-center gap-1 px-2 py-2 rounded-full pointer-events-auto"
+            style={{
+              background: "rgba(255,255,255,0.55)",
+              backdropFilter: "blur(24px) saturate(180%)",
+              WebkitBackdropFilter: "blur(24px) saturate(180%)",
+              border: "1px solid rgba(255,255,255,0.7)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9)",
+            }}
+          >
             {bottomTabs.map((tab) => {
               const isActive = bottomTab === tab.key;
               return (
@@ -2355,13 +2364,26 @@ export default function ResponsiveDashboard() {
                     setView(tab.view);
                     setActiveKey(tab.view);
                   }}
-                  className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative"
-                >
-                  {isActive && (
-                    <span className="absolute top-0 inset-x-2 h-0.5 rounded-b-full bg-[#B21063]" />
+                  className={cn(
+                    "flex flex-col items-center justify-center transition-all duration-300 rounded-full",
+                    isActive
+                      ? "gap-1 px-5 py-2.5"
+                      : "gap-0.5 px-4 py-2.5"
                   )}
-                  <tab.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")} />
-                  <span className={cn("text-[10px] font-semibold transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")}>
+                  style={isActive ? {
+                    background: "rgba(255,255,255,0.9)",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,1)",
+                    border: "1px solid rgba(255,255,255,0.8)",
+                  } : {}}
+                >
+                  <tab.icon className={cn(
+                    "transition-all duration-300",
+                    isActive ? "h-5 w-5 text-[#B21063]" : "h-4 w-4 text-neutral-400"
+                  )} />
+                  <span className={cn(
+                    "text-[10px] font-semibold whitespace-nowrap transition-all duration-300",
+                    isActive ? "text-[#B21063]" : "text-neutral-400"
+                  )}>
                     {tab.label}
                   </span>
                 </button>

@@ -21,6 +21,10 @@ import {
   SlidersHorizontal,
   Filter,
   MoreVertical,
+  Users,
+  User,
+  Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -481,13 +485,13 @@ function KpiCard({ title, value, sub, icon: Icon, color = "#4D8AFF", progress }:
   return (
     <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-3 sm:p-4 flex flex-col gap-1.5 hover:shadow-md transition-shadow" style={{ borderRadius: 12 }}>
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[11px] sm:text-[13px] text-neutral-500 font-semibold leading-tight">{title}</span>
+        <span className="text-[12px] sm:text-[14px] text-neutral-700 font-semibold leading-tight">{title}</span>
         <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 bg-neutral-100" style={{ borderRadius: 8 }}>
           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
         </div>
       </div>
-      <div className="text-sm sm:text-lg font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
-      {sub && <div className="text-[10px] sm:text-xs text-neutral-500 font-medium">{sub}</div>}
+      <div className="text-xl sm:text-xl font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
+      {sub && <div className="text-[12px] sm:text-xs text-neutral-500 font-medium">{sub}</div>}
       {progress !== undefined && (
         <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 overflow-hidden">
           <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: color }} />
@@ -744,7 +748,7 @@ function DrillTable({
                       </td>
                     ))}
                     <td className="px-2 py-2">
-                      <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
+                      <span className={cn("text-[12px] font-bold px-1.5 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
                     </td>
                   </tr>
                 );
@@ -789,7 +793,7 @@ function DrillTable({
               {hierarchyCols.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-neutral-100 flex flex-wrap gap-2">
                   {hierarchyCols.map(col => (
-                    <span key={col.key} className="text-[10px] text-neutral-500 bg-neutral-50 px-2 py-1 rounded">
+                    <span key={col.key} className="text-[12px] text-neutral-500 bg-neutral-50 px-2 py-1 rounded">
                       {renderCell(row, col.key)}
                     </span>
                   ))}
@@ -840,7 +844,7 @@ function DrillTable({
           <span className="text-xs text-neutral-500 font-medium">
             {activeFilterCount > 0 ? `${sorted.length} / ${rowCount}` : `${rowCount}`} سجل
             {activeFilterCount > 0 && (
-              <button onClick={() => setColFilters({})} className="mr-1.5 text-[10px] text-red-500 hover:text-red-700 font-normal">× مسح الفلاتر ({activeFilterCount})</button>
+              <button onClick={() => setColFilters({})} className="mr-1.5 text-[12px] text-red-500 hover:text-red-700 font-normal">× مسح الفلاتر ({activeFilterCount})</button>
             )}
           </span>
           {/* Options toggle button */}
@@ -865,7 +869,7 @@ function DrillTable({
                 <>
                   <div className="fixed inset-0 z-[55]" onClick={() => setColMenuOpen(false)} />
                   <div className="absolute left-0 top-full mt-1 z-[60] bg-white border border-neutral-200 rounded-xl shadow-xl p-2 min-w-[140px]">
-                    <p className="text-[10px] font-bold text-neutral-400 uppercase px-2 pb-1">إظهار الأعمدة</p>
+                    <p className="text-[12px] font-bold text-neutral-400 uppercase px-2 pb-1">إظهار الأعمدة</p>
                     {activeCols.filter(col => col.key !== "name").map(col => (
                       <button key={col.key}
                         onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
@@ -945,10 +949,10 @@ function DrillTable({
                     </td>
                   ))}
                   <td className="px-2 sm:px-3 py-2 sm:py-2.5">
-                    <span className={cn("text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
+                    <span className={cn("text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
                   </td>
                   <td className="px-2 sm:px-3 py-2 sm:py-2.5">
-                    <span className="text-[10px] sm:text-[11px] text-neutral-400 font-medium">انقر للعرض</span>
+                    <span className="text-[12px] sm:text-[12px] text-neutral-400 font-medium">انقر للعرض</span>
                   </td>
                 </tr>
               );
@@ -962,12 +966,12 @@ function DrillTable({
                 </td>
               ))}
               <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap">
-                <span className="text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg" style={{ backgroundColor: "#00C9A7", color: "white" }}>
+                <span className="text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg" style={{ backgroundColor: "#00C9A7", color: "white" }}>
                   {achievementPct}%
                 </span>
               </td>
               <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap">
-                <span className="text-[10px] sm:text-[11px] text-neutral-400 font-medium">—</span>
+                <span className="text-[12px] sm:text-[12px] text-neutral-400 font-medium">—</span>
               </td>
             </tr>
           </tfoot>
@@ -1007,10 +1011,10 @@ function DrillTable({
                         </td>
                       ))}
                       <td className="px-2 py-2">
-                        <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
+                        <span className={cn("text-[12px] font-bold px-1.5 py-0.5 rounded-lg", pctBg(pct))}>{pct}%</span>
                       </td>
                       <td className="px-2 py-2">
-                        <span className="text-[10px] text-neutral-400 font-medium">انقر للعرض</span>
+                        <span className="text-[12px] text-neutral-400 font-medium">انقر للعرض</span>
                       </td>
                     </tr>
                   );
@@ -1032,7 +1036,7 @@ function DrillTable({
             className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 disabled:opacity-30 hover:text-neutral-800 transition-colors font-medium">
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> السابق
           </button>
-          <span className="text-[10px] sm:text-xs text-neutral-500 font-medium">صفحة {tablePage} من {pages}</span>
+          <span className="text-[12px] sm:text-xs text-neutral-500 font-medium">صفحة {tablePage} من {pages}</span>
           <button onClick={() => setTablePage(p => Math.min(pages, p + 1))} disabled={tablePage === pages}
             className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 disabled:opacity-30 hover:text-neutral-800 transition-colors font-medium">
             التالي <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1052,14 +1056,14 @@ function DrillTable({
             {NUMERIC_KEYS.has(filterMenuCol) ? (
               <div className="space-y-2">
                 <div>
-                  <label className="text-[10px] text-neutral-400 block mb-0.5">أكبر من أو يساوي</label>
+                  <label className="text-[12px] text-neutral-400 block mb-0.5">أكبر من أو يساوي</label>
                   <input type="number" dir="ltr" placeholder="0"
                     className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
                     value={(colFilters[filterMenuCol] as any)?.min ?? ""}
                     onChange={e => updateNumFilter(filterMenuCol, "min", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-[10px] text-neutral-400 block mb-0.5">أصغر من أو يساوي</label>
+                  <label className="text-[12px] text-neutral-400 block mb-0.5">أصغر من أو يساوي</label>
                   <input type="number" dir="ltr" placeholder="∞"
                     className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
                     value={(colFilters[filterMenuCol] as any)?.max ?? ""}
@@ -1074,7 +1078,7 @@ function DrillTable({
             )}
             {isFilterActive(filterMenuCol) && (
               <button onClick={() => clearFilter(filterMenuCol)}
-                className="mt-2 w-full text-[10px] text-red-500 hover:text-red-700 text-right py-0.5">
+                className="mt-2 w-full text-[12px] text-red-500 hover:text-red-700 text-right py-0.5">
                 × مسح هذا الفلتر
               </button>
             )}
@@ -1122,7 +1126,7 @@ function TeamSummary({ data }: { data: { label: string; value: number; pct: numb
             <span className={cn("text-[11px] font-bold min-w-[28px] text-center rounded-md px-1.5 py-0.5", b.bg, b.text)}>
               {b.count}
             </span>
-            <span className="text-[10px] text-neutral-400 w-7 text-right shrink-0">
+            <span className="text-[12px] text-neutral-400 w-7 text-right shrink-0">
               {Math.round((b.count / total) * 100)}%
             </span>
           </div>
@@ -1132,21 +1136,21 @@ function TeamSummary({ data }: { data: { label: string; value: number; pct: numb
       {/* Top performers */}
       {top3.length > 0 && (
         <div className="border-t border-neutral-100 pt-2.5 space-y-1.5">
-          <p className="text-[10px] font-semibold text-neutral-400 mb-1">الأعلى أداءً</p>
+          <p className="text-[12px] font-semibold text-neutral-400 mb-1">الأعلى أداءً</p>
           {top3.map((d, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-neutral-300 w-3 shrink-0">{i + 1}</span>
+              <span className="text-[12px] font-bold text-neutral-300 w-3 shrink-0">{i + 1}</span>
               <span className="text-[11px] text-neutral-700 truncate flex-1">
                 {d.label.split(" ").slice(0, 2).join(" ")}
               </span>
               <span className="text-[11px] font-bold tabular-nums" style={{ color: pctColor(d.pct) }}>{d.pct}%</span>
-              <span className="text-[10px] text-neutral-400 tabular-nums">{formatNum(d.value)}</span>
+              <span className="text-[12px] text-neutral-400 tabular-nums">{formatNum(d.value)}</span>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[10px] text-neutral-400 text-center pt-0.5">{total.toLocaleString()} عنصر</p>
+      <p className="text-[12px] text-neutral-400 text-center pt-0.5">{total.toLocaleString()} عنصر</p>
     </div>
   );
 }
@@ -1318,7 +1322,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
         <div className="grid grid-cols-7 mb-1">
           {DAYS_FULL_AR.map((d, i) => (
             <div key={i} className={cn(
-              "text-center text-[9px] sm:text-[10px] font-semibold py-0.5 sm:py-1",
+              "text-center text-[9px] sm:text-[12px] font-semibold py-0.5 sm:py-1",
               i === 5 ? "text-[#2563EB]" : i === 6 ? "text-[#2563EB]" : "text-neutral-500"
             )}>
               {d.slice(0, d === "الاثنين" || d === "الثلاثاء" || d === "الأربعاء" || d === "الخميس" ? 6 : 4)}
@@ -1395,7 +1399,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
             <button
               onClick={() => setSelecting("from")}
               className={cn(
-                "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[10px] sm:text-[12px] font-bold border-2 transition-colors",
+                "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[12px] sm:text-[12px] font-bold border-2 transition-colors",
                 selecting === "from" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 text-neutral-600"
               )}
             >
@@ -1405,7 +1409,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
             <button
               onClick={() => setSelecting("to")}
               className={cn(
-                "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[10px] sm:text-[12px] font-bold border-2 transition-colors",
+                "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[12px] sm:text-[12px] font-bold border-2 transition-colors",
                 selecting === "to" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 text-neutral-600"
               )}
             >
@@ -1448,11 +1452,11 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
           className="flex items-center gap-1.5 sm:gap-2 border border-neutral-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 bg-white hover:bg-neutral-50 transition-colors shadow-sm"
         >
           <Calendar className="w-3 h-3.5 sm:w-3.5 sm:h-3.5 text-neutral-400 shrink-0" />
-          <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-700 whitespace-nowrap">
+          <span className="text-[12px] sm:text-[12px] font-semibold text-neutral-700 whitespace-nowrap">
             {displayFrom}
           </span>
-          <span className="text-[9px] sm:text-[10px] text-neutral-400 mx-0.5 sm:mx-1">—</span>
-          <span className={cn("text-[10px] sm:text-[11px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700")}>
+          <span className="text-[9px] sm:text-[12px] text-neutral-400 mx-0.5 sm:mx-1">—</span>
+          <span className={cn("text-[12px] sm:text-[12px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700")}>
             {displayTo}
           </span>
         </button>
@@ -1516,7 +1520,7 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
       <button
         onClick={() => setOpen(v => !v)}
         className={cn(
-          "flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white focus:outline-none cursor-pointer font-medium transition-colors whitespace-nowrap",
+          "flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[12px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white focus:outline-none cursor-pointer font-medium transition-colors whitespace-nowrap",
           hasSelection ? "border-[#B21063] text-[#B21063]" : "border-neutral-200 text-neutral-700"
         )}
       >
@@ -1544,13 +1548,13 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="بحث..."
-              className="w-full text-[10px] sm:text-[11px] border border-neutral-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
+              className="w-full text-[12px] sm:text-[12px] border border-neutral-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
             />
           </div>
           <div className="p-1 border-b border-neutral-100">
             <button
               onClick={toggleAll}
-              className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-[11px] font-semibold hover:bg-neutral-50 transition-colors text-neutral-600"
+              className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[12px] sm:text-[12px] font-semibold hover:bg-neutral-50 transition-colors text-neutral-600"
             >
               <span className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
                 selected.size === options.length ? "bg-[#B21063] border-[#B21063]" : "border-neutral-300"
@@ -1561,12 +1565,12 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
             </button>
           </div>
           <div className="max-h-56 overflow-y-auto">
-            {filtered.length === 0 && <p className="text-center text-[10px] sm:text-[11px] text-neutral-400 py-2 sm:py-3">لا توجد نتائج</p>}
+            {filtered.length === 0 && <p className="text-center text-[12px] sm:text-[12px] text-neutral-400 py-2 sm:py-3">لا توجد نتائج</p>}
             {filtered.map(opt => (
               <button
                 key={opt.id}
                 onClick={() => toggle(opt.id)}
-                className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] hover:bg-neutral-50 transition-colors text-right"
+                className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[12px] sm:text-[12px] hover:bg-neutral-50 transition-colors text-right"
               >
                 <span className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
                   selected.has(opt.id) ? "bg-[#B21063] border-[#B21063]" : "border-neutral-300"
@@ -1580,7 +1584,7 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
           {hasSelection && (
             <div className="p-2 border-t border-neutral-100">
               <button onClick={() => { onChange(new Set()); setOpen(false); }}
-                className="w-full text-[10px] sm:text-[11px] text-neutral-400 hover:text-red-500 transition-colors font-medium">
+                className="w-full text-[12px] sm:text-[12px] text-neutral-400 hover:text-red-500 transition-colors font-medium">
                 مسح التحديد
               </button>
             </div>
@@ -1888,21 +1892,28 @@ export default function SalesPerformancePage({ onBack }: Props) {
             exit="hide"
             className="overflow-hidden"
           >
-          <div className="px-2 sm:px-6 py-1.5 sm:py-2 border-b border-neutral-100 flex items-center gap-1.5 sm:gap-2">
-            <div className="flex flex-1 items-center gap-0.5 rounded-xl p-0.5 min-w-0">
-            {([["team","الفريق"],["areas","المناطق"],["supervisors","المشرفين"],["showrooms","المعارض"],["sellers","البائعين"]] as [FilterType, string][]).map(([type, label]) => (
+          <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
+            <div className="flex items-center gap-1 bg-neutral-100 rounded-full p-1 min-w-0">
+            {([
+              ["team","الفريق", Users],
+              ["areas","المناطق", MapPin],
+              ["supervisors","المشرفين", ShieldCheck],
+              ["showrooms","المعارض", Building2],
+              ["sellers","البائعين", User]
+            ] as [FilterType, string, React.ElementType][]).map(([type, label, Icon]) => (
               <motion.button
                 key={type}
                 onClick={() => { setFilterType(type); resetTableFilters(); }}
                 layout
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className={cn(
-                  "flex flex-1 items-center justify-center px-1.5 sm:px-3 py-1.5 rounded-[10px] text-[11px] sm:text-[13px] font-bold transition-colors duration-200 min-w-0",
+                  "flex flex-1 items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0",
                   filterType === type
                     ? "bg-neutral-900 text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 hover:bg-neutral-200/60"
+                    : "bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900"
                 )}
               >
+                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
                 <span className="truncate">{label}</span>
               </motion.button>
             ))}
@@ -2006,9 +2017,9 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 /* ── Analytics view: simple title + single filter ── */
                 <>
                   <div className="flex items-center gap-3 sm:gap-4 w-full overflow-x-auto">
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-4 shrink-0">
                       <span className="text-xs sm:text-sm font-bold text-neutral-700">مؤشر أداء</span>
-                      <span className="text-[11px] sm:text-[10px] text-neutral-400">
+                      <span className="text-[12px] sm:text-[12px] text-neutral-400">
                         {period === "day"
                           ? `${selectedDay} ${MONTHS_AR[month]} ${toArabicDigits(String(year))}`
                           : period === "month"
@@ -2062,12 +2073,12 @@ export default function SalesPerformancePage({ onBack }: Props) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16 sm:pb-20">
         <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-0 sm:pt-2">
           {/* ── Calendar / Period Navigator ── */}
-          <div className="border-b border-neutral-100 px-2.5 py-2.5 -mx-1">
+          <div className="border-b border-neutral-100 px-2.5 py-2.5 -mx-1 mb-5 mt-[10px]">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-0.5 bg-white rounded-lg p-0.5 border border-neutral-200 ">
                 {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
                   <button key={p} onClick={() => setPeriod(p as Period)}
-                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] sm:text-[11px] font-semibold transition-all whitespace-nowrap",
+                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] sm:text-[12px] font-semibold transition-all whitespace-nowrap",
                       period === p ? "bg-neutral-800 text-white shadow-sm" : "text-neutral-500 hover:text-neutral-700")}>
                     {l}
                   </button>
@@ -2104,7 +2115,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           border: isSelected ? "0px solid rgba(0,0,0,0.25)" : "0px solid #e5e5e5",
                           boxShadow: isSelected ? "0 0px 0px rgba(0,0,0,0.18)" : "0 0px 0px rgba(0,0,0,0.08)",
                         }}>
-                        <span className="text-[10px] sm:text-[11px] font-bold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : "#030303" }}>{mName}</span>
+                        <span className="text-[12px] sm:text-[12px] font-bold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : "#030303" }}>{mName}</span>
                         <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: isSelected ? "#ffffff" : color }}>{pct}%</span>
                         <div className="w-full h-1 sm:h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
                           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isSelected ? "#ffffff" : color }} />
@@ -2126,7 +2137,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           border: isYearSelected ? "1.5px solid rgba(0,0,0,0.25)" : "1.5px solid transparent",
                           boxShadow: isYearSelected ? "0 2px 8px rgba(0,0,0,0.18)" : "none",
                         }}>
-                        <span className="text-[10px] sm:text-[11px] font-bold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : "#B21063" }}>السنوي</span>
+                        <span className="text-[12px] sm:text-[12px] font-bold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : "#B21063" }}>السنوي</span>
                         <span className="text-xs sm:text-sm font-extrabold whitespace-nowrap" style={{ color: isYearSelected ? "#ffffff" : pctColor(yearPct) }}>{yearPct}%</span>
                         <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isYearSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
                           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(yearPct, 100)}%`, backgroundColor: isYearSelected ? "#ffffff" : "#B21063" }} />
@@ -2160,7 +2171,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                         }}>
                         <span className="text-[9px] font-semibold leading-none" style={{ color: isSelected ? "rgba(255, 255, 255, 0.65)" : "#737373" }}>{dayName}</span>
                         <span className="text-[13px] font-extrabold leading-tight" style={{ color: isSelected ? "#ffffff" : "#1a1a1a" }}>{day}</span>
-                        <span className="text-[10px] font-bold leading-none" style={{ color: isSelected ? "#ffffff" : color }}>{pct}%</span>
+                        <span className="text-[12px] font-bold leading-none" style={{ color: isSelected ? "#ffffff" : color }}>{pct}%</span>
                         <div className="w-4/5 h-1.5 rounded-full overflow-hidden mt-0.5" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.25)" : "#ddd" }}>
                           <div className="h-full rounded-full transition-all duration-300" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isSelected ? "#ffffff" : color }} />
                         </div>
@@ -2201,7 +2212,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
               </React.Fragment>
             ))}
             <button onClick={() => setDrillPath([])}
-              className="mr-auto text-[10px] text-neutral-400 hover:text-neutral-600 px-2 py-0.5 rounded-lg hover:bg-neutral-200 transition-colors">
+              className="mr-auto text-[12px] text-neutral-400 hover:text-neutral-600 px-2 py-0.5 rounded-lg hover:bg-neutral-200 transition-colors">
               إعادة ضبط
             </button>
           </div>
@@ -2259,7 +2270,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                                 <div className="rounded-t-lg transition-all duration-500 w-full max-w-[32px]"
                                   style={{ height: barH, backgroundColor: cat.color }} />
                               </div>
-                              <span className="text-[10px] text-neutral-500 text-center leading-tight font-medium">{cat.name}</span>
+                              <span className="text-[12px] text-neutral-500 text-center leading-tight font-medium">{cat.name}</span>
                             </div>
                           );
                         })}
@@ -2341,7 +2352,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       return "أداء الأقاليم";
                     })()}
                   </h3>
-                  <span className="text-[10px] text-neutral-400 font-medium">انقر للتفصيل</span>
+                  <span className="text-[12px] text-neutral-400 font-medium">انقر للتفصيل</span>
                 </div>
                 <div className="space-y-2">
                   {(() => {
@@ -2496,7 +2507,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                               <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 tabular-nums text-xs sm:text-sm">{formatFull(row.target)}</td>
                               <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(row.prevSales))}</td>
                               <td className="px-2 sm:px-3 py-2 sm:py-2">
-                                <span className={cn("text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(row.pct))}>{row.pct}%</span>
+                                <span className={cn("text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(row.pct))}>{row.pct}%</span>
                               </td>
                             </tr>
                           ))}
@@ -2508,7 +2519,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                             <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 tabular-nums text-xs sm:text-sm">{formatFull(dayRows.reduce((s, r) => s + r.target, 0))}</td>
                             <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(dayRows.reduce((s, r) => s + r.prevSales, 0)))}</td>
                             <td className="px-2 sm:px-3 py-2 sm:py-2.5">
-                              <span className={cn("text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(achievementPct))}>{achievementPct}%</span>
+                              <span className={cn("text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(achievementPct))}>{achievementPct}%</span>
                             </td>
                           </tr>
                         </tfoot>
