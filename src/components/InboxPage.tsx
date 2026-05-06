@@ -109,7 +109,7 @@ function toneClasses(tone: 'sky' | 'rose' | 'violet' | 'emerald' | 'amber') {
   return map[tone];
 }
 
-function StatCard({ title, value, icon: Icon, tone = 'sky' as 'sky' | 'rose' | 'violet' | 'emerald' | 'amber' }) {
+function StatCard({ title, value, icon: Icon, tone = 'sky' }: { title: string; value: string; icon: React.ElementType; tone?: 'sky' | 'rose' | 'violet' | 'emerald' | 'amber' }) {
   const t = toneClasses(tone);
   return (
     <Card className={cn('rounded-2xl border shadow-sm transition-all duration-200 hover:shadow-md', t.card)}>
@@ -323,6 +323,7 @@ const InboxPage: React.FC<InboxPageProps> = ({ onViewDetails, transactions: prop
       inProgress: transactions.filter((t) => t.status === 'in-progress').length,
       completed: transactions.filter((t) => t.status === 'completed').length,
       rejected: transactions.filter((t) => t.status === 'rejected').length,
+      urgent: transactions.filter((t) => t.priority === 'high').length,
     };
   }, [transactions]);
 
@@ -332,43 +333,32 @@ const InboxPage: React.FC<InboxPageProps> = ({ onViewDetails, transactions: prop
       className="min-h-screen bg-[radial-gradient(40%_40%_at_100%_0%,#d1fae5_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,#fce7f3_0%,transparent_60%)]"
     >
       <div className="mx-auto max-w-[1400px] p-3 sm:p-6 space-y-4 sm:space-y-6">
-        <div className="flex flex-col gap-3 sm:gap-4">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <Card className="rounded-2xl border bg-gradient-to-b from-green-50/70 to-white shadow-sm">
-              <CardHeader className="pb-3 px-4 sm:px-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-xl bg-green-100/60 text-green-700 border border-green-200">
-                      <Inbox className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </div>
-                    <CardTitle className="text-lg sm:text-xl">المعاملات الواردة</CardTitle>
-                  </div>
-                  <Badge className="bg-green-600 text-white px-3 py-1.5 w-fit">
-                    {filteredTransactions.length} معاملة
-                  </Badge>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6"
+        >
+          <Card className="rounded-2xl border bg-gradient-to-b from-green-50/80 to-white border-green-100 shadow-sm transition-all duration-200 hover:shadow-md">
+            <CardHeader className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-green-100/60 text-green-700 border border-green-200 shrink-0">
+                  <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
-              </CardHeader>
-              <CardContent className="px-4 sm:px-6 pb-4">
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  إدارة ومتابعة جميع المعاملات التي قمت استلامها
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5"
-          >
-            <StatCard title="إجمالي المعاملات" value={`${stats.total}`} icon={FileText} tone="sky" />
-            <StatCard title="قيد الانتظار" value={`${stats.pending}`} icon={Clock} tone="amber" />
-            <StatCard title="قيد المعالجة" value={`${stats.inProgress}`} icon={AlertTriangle} tone="violet" />
-            <StatCard title="مكتملة" value={`${stats.completed}`} icon={CheckCircle2} tone="emerald" />
-            <StatCard title="مرفوضة" value={`${stats.rejected}`} icon={XCircle} tone="rose" />
-          </motion.div>
-        </div>
+                <CardTitle className="text-xs sm:text-sm font-medium leading-tight">الواردة</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 px-3 sm:px-4 pb-3 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold text-green-700">{filteredTransactions.length}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">معاملة واردة</p>
+            </CardContent>
+          </Card>
+          <StatCard title="إجمالي المعاملات" value={`${stats.total}`} icon={FileText} tone="sky" />
+          <StatCard title="قيد الانتظار" value={`${stats.pending}`} icon={Clock} tone="amber" />
+          <StatCard title="مكتملة" value={`${stats.completed}`} icon={CheckCircle2} tone="emerald" />
+          <StatCard title="مرفوضة" value={`${stats.rejected}`} icon={XCircle} tone="rose" />
+          <StatCard title="عاجلة" value={`${stats.urgent}`} icon={AlertTriangle} tone="rose" />
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}

@@ -10,76 +10,21 @@ import ExitPermitForm from "./components/ExitPermitForm";
 import TransportAllowanceForm from "./components/TransportAllowanceForm";
 import SalesPerformancePage from "./components/SalesPerformancePage";
 import TasksPage from "./components/TasksPage";
+import SaudiCalendar from "./components/SaudiCalendar";
 import { supabase } from "./lib/supabase";
 import { Bell, Search, Settings, Menu, LogOut, Inbox, Send, FileText, Users, ShieldCheck, ClipboardList, Award, Accessibility, GaugeCircle, Sparkles, ChevronRight, ChevronLeft, ChevronDown, Upload, X, Save, Check, ArrowRight, Tag, Calendar, Building2, Shield, AlertTriangle, Clock, CheckCircle, Phone, RefreshCcw, Archive, FilePlus, Mail, BarChart3, LayoutDashboard, ArrowLeftRight, ExternalLink, Globe, Database, MessageSquare, TrendingUp, FileSpreadsheet, Briefcase, UserCheck, CreditCard, Home, Car, Plane, Heart, GraduationCap, Baby, MapPin, Zap, User, Lock, Eye, EyeOff, Smartphone, CircleUser as UserCircle, ListTodo, Megaphone, Languages, Type } from "lucide-react";
 
 // ====== مجموعات القائمة الجانبية ======
 const sidebarGroups = [
   {
-    label: "عام",
-    items: [{ key: "dashboard", title: "الرئيسية", icon: GaugeCircle }],
-  },
-  {
-    label: "الطلبات",
+    label: "الرئيسية",
     items: [
-      { key: "request_new", title: "طلب جديد", icon: FilePlus },
-      { key: "inbox", title: "الوارد", icon: Inbox },
-      { key: "outbox", title: "الصادر", icon: Send },
-      { key: "request_archive", title: "ارشيف الطلب", icon: Archive },
-      { key: "notices", title: "التنبيهات والتعميمات", icon: Bell },
-    ],
-  },
-  {
-    label: "الحضور والانصراف",
-    items: [
-      { key: "attendance_report", title: "تقرير الحضور", icon: Calendar },
-      { key: "exit_permission", title: "طلب اذن خروج", icon: LogOut },
-      { key: "permissions_review", title: "مراجعة الأذونات", icon: ClipboardList },
-      { key: "hazer_system", title: "نظام حاضر", icon: Clock },
-    ],
-  },
-  {
-    label: "المسيرات والخصوم",
-    items: [
-      { key: "advances_approval", title: "مصادقة السلف", icon: CheckCircle },
-      { key: "payroll_deductions", title: "المسير والخصوم", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "الأنشطة والمسابقات",
-    items: [
-      { key: "excellence_comp", title: "مسابقة التميز المؤسسي", icon: Award },
-      { key: "ramadan_events", title: "مسابقة وأنشطة رمضان", icon: Sparkles },
-    ],
-  },
-  {
-    label: "خدمات أخرى",
-    items: [
-      { key: "complaints", title: "الشكاوى والاقتراحات", icon: AlertTriangle },
-      { key: "central", title: "السنترال", icon: Phone },
-      { key: "profile_update", title: "تحديث البيانات", icon: RefreshCcw },
-      { key: "help", title: "مساعدة", icon: Sparkles },
-    ],
-  },
-  {
-    label: "إحصائيات المبيعات",
-    items: [
-      { key: "sales_kpi", title: "مؤشرات الأداء", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "روابط خارجية",
-    items: [
-      { key: "hr_queries", title: "استعلامات الموارد البشرية", icon: Users },
-      { key: "archiving_system", title: "نظام الأرشفة الإلكترونية", icon: Archive },
-      { key: "tasks_tracking", title: "نظام متابعة المهام", icon: ClipboardList },
-      { key: "deraa_email", title: "إيميل درعه", icon: Mail },
-      { key: "external_email", title: "الإيميل الخارجي", icon: Mail },
-      { key: "daily_sales", title: "المبيعات اليومية", icon: BarChart3 },
-      { key: "portal_dashboard", title: "لوحة تحكم البوابة", icon: LayoutDashboard },
-      { key: "email_dashboard", title: "لوحة تحكم الايميل", icon: LayoutDashboard },
-      { key: "transactions_reports", title: "تقارير المعاملات", icon: BarChart3 },
-      { key: "transfers_followup", title: "متابعة التحويلات والاستلامات", icon: ArrowLeftRight },
+      { key: "transactions", title: "المعاملات",  icon: ArrowLeftRight },
+      { key: "tasks",        title: "المهام",     icon: ListTodo },
+      { key: "attendance",   title: "الحضور",     icon: Calendar },
+      { key: "sales_kpi",    title: "الأداء",     icon: TrendingUp },
+      { key: "notifications",title: "التنبيهات", icon: Bell },
+      { key: "shortcuts",    title: "اختصارات",  icon: Zap },
     ],
   },
 ];
@@ -426,6 +371,21 @@ function TransactionSelectionPage({ onCancel, onTransactionSelect }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("الكل");
 
+  const colorMap: Record<string, { card: string; iconWrap: string }> = {
+    'from-green-500':  { card: 'bg-gradient-to-b from-emerald-50/80 to-white border-emerald-100', iconWrap: 'bg-emerald-100/60 text-emerald-700 border-emerald-200' },
+    'from-red-500':    { card: 'bg-gradient-to-b from-rose-50/80 to-white border-rose-100',       iconWrap: 'bg-rose-100/60 text-rose-700 border-rose-200' },
+    'from-blue-500':   { card: 'bg-gradient-to-b from-sky-50/80 to-white border-sky-100',         iconWrap: 'bg-sky-100/60 text-sky-700 border-sky-200' },
+    'from-purple-500': { card: 'bg-gradient-to-b from-violet-50/80 to-white border-violet-100',   iconWrap: 'bg-violet-100/60 text-violet-700 border-violet-200' },
+    'from-orange-500': { card: 'bg-gradient-to-b from-amber-50/80 to-white border-amber-100',     iconWrap: 'bg-amber-100/60 text-amber-700 border-amber-200' },
+    'from-teal-500':   { card: 'bg-gradient-to-b from-teal-50/80 to-white border-teal-100',       iconWrap: 'bg-teal-100/60 text-teal-700 border-teal-200' },
+    'from-indigo-500': { card: 'bg-gradient-to-b from-indigo-50/80 to-white border-indigo-100',   iconWrap: 'bg-indigo-100/60 text-indigo-700 border-indigo-200' },
+    'from-pink-500':   { card: 'bg-gradient-to-b from-pink-50/80 to-white border-pink-100',       iconWrap: 'bg-pink-100/60 text-pink-700 border-pink-200' },
+    'from-sky-500':    { card: 'bg-gradient-to-b from-sky-50/80 to-white border-sky-100',         iconWrap: 'bg-sky-100/60 text-sky-700 border-sky-200' },
+    'from-gray-500':   { card: 'bg-gradient-to-b from-neutral-50/80 to-white border-neutral-100', iconWrap: 'bg-neutral-100/60 text-neutral-600 border-neutral-200' },
+    'from-yellow-500': { card: 'bg-gradient-to-b from-yellow-50/80 to-white border-yellow-100',   iconWrap: 'bg-yellow-100/60 text-yellow-700 border-yellow-200' },
+    'from-violet-500': { card: 'bg-gradient-to-b from-violet-50/80 to-white border-violet-100',   iconWrap: 'bg-violet-100/60 text-violet-700 border-violet-200' },
+  };
+
   const departments = ["الكل", ...new Set(transactionTypes.map(t => t.department))];
   
   const filteredTransactions = transactionTypes.filter(transaction => {
@@ -468,42 +428,33 @@ function TransactionSelectionPage({ onCancel, onTransactionSelect }) {
             </div>
 
             {/* شبكة المعاملات */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-              {filteredTransactions.map((transaction, index) => (
-                <motion.button
-                  key={transaction.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => onTransactionSelect(transaction.id, transaction.title)}
-                  className="group relative h-full min-h-[180px] flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-right p-4 shadow-sm"
-                >
-                  {/* طبقة التدرّج الخلفية */}
-                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", transaction.color)} />
-
-                  <div className="relative flex items-start gap-3 mb-3">
-                    <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r ${transaction.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm`}>
-                      <transaction.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-6">
+              {filteredTransactions.map((transaction, index) => {
+                const colorKey = transaction.color.split(' ')[0];
+                const style = colorMap[colorKey] ?? { card: 'bg-gradient-to-b from-neutral-50/80 to-white border-neutral-100', iconWrap: 'bg-neutral-100/60 text-neutral-600 border-neutral-200' };
+                return (
+                  <motion.button
+                    key={transaction.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => onTransactionSelect(transaction.id, transaction.title)}
+                    className={cn('group rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 text-right flex flex-col', style.card)}
+                  >
+                    <div className="pb-2 px-3 sm:px-4 pt-3 sm:pt-4">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className={cn('grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl border shrink-0', style.iconWrap)}>
+                          <transaction.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </div>
+                        <span className="text-xs sm:text-sm font-medium leading-tight text-neutral-800">{transaction.title}</span>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm sm:text-base text-neutral-800 leading-tight mb-1">
-                        {transaction.title}
-                      </h3>
+                    <div className="pt-0 px-3 sm:px-4 pb-3 sm:pb-4">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{transaction.department}</p>
                     </div>
-                  </div>
-
-                  <p className="relative text-xs sm:text-sm text-neutral-600 leading-relaxed mb-3 flex-1">
-                    {transaction.description}
-                  </p>
-
-                  <div className="relative flex items-center justify-between mt-auto">
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100/80 text-blue-800 border border-blue-200/50">
-                      {transaction.department}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                );
+              })}
             </div>
 
             {filteredTransactions.length === 0 && (
@@ -792,7 +743,6 @@ const primaryCards = [
 // ====== الواجهة الرئيسية ======
 export default function ResponsiveDashboard() {
   const [currentPage, setCurrentPage] = useState("welcome"); // TODO: restore "login"
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [bottomTab, setBottomTab] = useState("transactions");
@@ -803,8 +753,9 @@ export default function ResponsiveDashboard() {
   });
   const dark = false;
   const [activeKey, setActiveKey] = useState("dashboard");
-  const [openGroups, setOpenGroups] = useState(() => Object.fromEntries(sidebarGroups.map((g) => [g.label, g.label === "الطلبات" || g.label === "الحضور والانصراف" || g.label === "إحصائيات المبيعات"])));
   const [view, setView] = useState("dashboard"); // dashboard | add | attendance_report | ...
+  const [transactionsSubTab, setTransactionsSubTab] = useState<'new'|'inbox'|'outbox'|'archive'>('inbox');
+  const [attendanceSubTab, setAttendanceSubTab] = useState<'report'|'permit'|'hazer'|'calendar'>('report');
 
   // صفحة تسجيل الدخول
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
@@ -986,8 +937,6 @@ export default function ResponsiveDashboard() {
   })();
   const currentTitle = titlesMap[view] || "البوابة الإلكترونية";
 
-  function toggleGroup(label) { setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] })); }
-
   const remainingCards = cards.filter((c) => !["الوارد", "أرشيف الصادر"].includes(c.title));
   
   // فصل الروابط الخارجية من البطاقات العادية
@@ -1019,8 +968,8 @@ export default function ResponsiveDashboard() {
       setView("outbox");
       setActiveKey("outbox");
     } else if (card.title === "تقرير الحضور") {
-      setView("attendance_report");
-      setActiveKey("attendance_report");
+      setView("attendance"); setAttendanceSubTab('report');
+      setActiveKey("attendance");
     } else {
       // للبطاقات الأخرى، يمكن إضافة منطق مخصص
       console.log(`تم النقر على بطاقة: ${card.title}`);
@@ -1821,17 +1770,6 @@ export default function ResponsiveDashboard() {
   function renderDashboard() {
     // فصل البطاقات حسب النوع
     const serviceCards = cards.filter((c) => !["الوارد", "أرشيف الصادر"].includes(c.title));
-    
-    // الحصول على الروابط الخارجية من القائمة الجانبية
-    const externalLinksGroup = sidebarGroups.find(g => g.label === "روابط خارجية");
-    const externalLinksCards = externalLinksGroup ? externalLinksGroup.items.map(item => ({
-      title: item.title,
-      subtitle: "رابط خارجي",
-      icon: item.icon,
-      badge: null,
-      accent: "from-gray-500/50 to-slate-600/50",
-      action: "فتح الرابط"
-    })) : [];
 
     return (
       <div className="space-y-6">
@@ -1911,52 +1849,125 @@ export default function ResponsiveDashboard() {
             ))}
           </section>
         </div>
+      </div>
+    );
+  }
 
-        {/* قسم الروابط الخارجية */}
+
+  function renderShortcutsPage() {
+    const externalLinks = [
+      {
+        title: "استعلامات الموارد البشرية",
+        description: "استعلم عن راتبك ومستحقاتك",
+        icon: Users,
+        url: "#",
+        accent: "from-blue-500/50 to-blue-600/50"
+      },
+      {
+        title: "نظام الأرشفة الإلكترونية",
+        description: "إدارة وأرشفة المستندات",
+        icon: Archive,
+        url: "#",
+        accent: "from-green-500/50 to-green-600/50"
+      },
+      {
+        title: "نظام متابعة المهام",
+        description: "تتبع وإدارة المهام اليومية",
+        icon: ClipboardList,
+        url: "#",
+        accent: "from-purple-500/50 to-purple-600/50"
+      },
+      {
+        title: "إيميل درعه",
+        description: "البريد الإلكتروني الداخلي",
+        icon: Mail,
+        url: "#",
+        accent: "from-red-500/50 to-red-600/50"
+      },
+      {
+        title: "الإيميل الخارجي",
+        description: "البريد الإلكتروني الخارجي",
+        icon: Globe,
+        url: "#",
+        accent: "from-indigo-500/50 to-indigo-600/50"
+      },
+      {
+        title: "المبيعات اليومية",
+        description: "تقارير المبيعات والإحصائيات",
+        icon: TrendingUp,
+        url: "#",
+        accent: "from-orange-500/50 to-orange-600/50"
+      },
+      {
+        title: "لوحة تحكم البوابة",
+        description: "إدارة وتحكم البوابة",
+        icon: LayoutDashboard,
+        url: "#",
+        accent: "from-teal-500/50 to-teal-600/50"
+      },
+      {
+        title: "لوحة تحكم الايميل",
+        description: "إدارة البريد الإلكتروني",
+        icon: MessageSquare,
+        url: "#",
+        accent: "from-pink-500/50 to-pink-600/50"
+      },
+      {
+        title: "تقارير المعاملات",
+        description: "تقارير شاملة للمعاملات",
+        icon: FileSpreadsheet,
+        url: "#",
+        accent: "from-cyan-500/50 to-cyan-600/50"
+      },
+      {
+        title: "متابعة التحويلات والاستلامات",
+        description: "تتبع التحويلات المالية",
+        icon: ArrowLeftRight,
+        url: "#",
+        accent: "from-amber-500/50 to-amber-600/50"
+      }
+    ];
+
+    return (
+      <div className="space-y-6">
         <div>
           <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الروابط الخارجية</h2>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
-            {externalLinksCards.map((card, idx) => (
-              <motion.button
-                key={card.title + idx}
+            {externalLinks.map((link, idx) => (
+              <motion.a
+                key={link.title}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.03 * (idx + 8) }}
-                onClick={() => handleCardClick(card)}
+                transition={{ delay: 0.03 * idx }}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
                 <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
-                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
+                  <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", link.accent)} />
                   <div className="relative p-5 flex flex-col gap-3 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
-                        <card.icon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{card.title}</span>
+                        <link.icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{link.title}</span>
                       </div>
-                      {card.badge !== null && (
-                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
-                      )}
                     </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
+                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{link.description}</p>
                   </div>
                   <div className="px-5 pb-5 mt-auto">
-                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
+                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors flex items-center gap-1">
+                      فتح الرابط
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                 </div>
-              </motion.button>
+              </motion.a>
             ))}
           </section>
         </div>
       </div>
     );
-  }
-
-  function renderAttendancePage() {
-    return <AttendanceDashboard />;
-  }
-
-  function renderHazerSystemPage() {
-    return <HazerSystem />;
   }
 
   function renderGenericPage(key) {
@@ -2058,13 +2069,103 @@ export default function ResponsiveDashboard() {
     );
   }
 
+  function renderAttendanceHub() {
+    const ATTEND_TABS: ['report'|'permit'|'hazer'|'calendar', string, any][] = [
+      ['report',   'تقرير الحضور',          ClipboardList],
+      ['permit',   'طلب إذن',               Clock],
+      ['hazer',    'نظام حاضر',             Shield],
+      ['calendar', 'التقويم السنوي',        Calendar],
+    ];
+    return (
+      <div dir="rtl">
+        <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+          <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
+            <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
+              <div className="flex items-center gap-1 bg-neutral-0 rounded-full p-1 min-w-0">
+              {ATTEND_TABS.map(([key, label, Icon]) => (
+                <button key={key} onClick={() => setAttendanceSubTab(key)}
+                  className={cn(
+                    'flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0',
+                    attendanceSubTab === key
+                      ? 'bg-neutral-900 text-white shadow-sm'
+                      : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900'
+                  )}>
+                  <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                  <span className="truncate">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          </div>
+        </div>
+        {attendanceSubTab === 'report'   && <AttendanceDashboard />}
+        {attendanceSubTab === 'permit'   && <ExitPermitForm />}
+        {attendanceSubTab === 'hazer'    && <HazerSystem />}
+        {attendanceSubTab === 'calendar' && <SaudiCalendar />}
+      </div>
+    );
+  }
+
+  function renderTransactionsHub() {
+    const TRANS_TABS: [typeof transactionsSubTab, string, any][] = [
+      ['new',     'طلب جديد',      FilePlus],
+      ['inbox',   'الوارد',        Inbox],
+      ['outbox',  'الصادر',        Send],
+      ['archive', 'أرشيف الصادر', Archive],
+    ];
+    return (
+      <div dir="rtl" className="min-h-screen" style={{ backgroundColor: '#F4F8FE' }}>
+        {/* Tab Bar */}
+        <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+          <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
+            <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
+              <div className="flex items-center gap-1 bg-neutral-0 rounded-full p-1 min-w-0">
+              {TRANS_TABS.map(([key, label, Icon]) => (
+                <button key={key} onClick={() => setTransactionsSubTab(key)}
+                  className={cn(
+                    'flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0',
+                    transactionsSubTab === key
+                      ? 'bg-neutral-900 text-white shadow-sm'
+                      : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900'
+                  )}>
+                  <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                  <span className="truncate">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          </div>
+        </div>
+        {/* Content */}
+        {transactionsSubTab === 'new' && (
+          <TransactionSelectionPage
+            onCancel={() => setTransactionsSubTab('inbox')}
+            onTransactionSelect={(transactionId: string) => {
+              if (transactionId === 'annual_leave') setView('annual_leave');
+              else if (transactionId === 'transportation') setView('transport_allowance');
+              else setView('add');
+            }}
+          />
+        )}
+        {transactionsSubTab === 'inbox' && renderInboxView()}
+        {transactionsSubTab === 'outbox' && renderOutboxView()}
+        {transactionsSubTab === 'archive' && (
+          <OutboxPage
+            onViewDetails={(id) => { setSelectedTransactionId(id); setView('transaction_details'); }}
+          />
+        )}
+      </div>
+    );
+  }
+
   function renderContent() {
     if (view === "dashboard") return renderDashboard();
     if (view === "settings") return renderSettingsPage();
+    if (view === "transactions") return renderTransactionsHub();
     if (view === "add" || view === "transaction_selection") return (
       <TransactionSelectionPage
-        onCancel={() => setView("dashboard")}
-        onTransactionSelect={(transactionId, transactionName) => {
+        onCancel={() => setView("transactions")}
+        onTransactionSelect={(transactionId: string) => {
           if (transactionId === "annual_leave") {
             setView("annual_leave");
           } else if (transactionId === "transportation") {
@@ -2075,17 +2176,16 @@ export default function ResponsiveDashboard() {
         }}
       />
     );
-    if (view === "annual_leave") return <AnnualLeaveForm onCancel={() => setView("dashboard")} onSubmit={() => {}} />;
-    if (view === "add_form") return <AddTransactionForm onCancel={() => setView("dashboard")} onSaved={() => {}} />;
-    if (view === "attendance_report") return renderAttendancePage();
-    if (view === "exit_permission") return <ExitPermitForm />;
-    if (view === "hazer_system") return renderHazerSystemPage();
-    if (view === "transport_allowance") return <TransportAllowanceForm onBack={() => setView("add")} onSubmitSuccess={handleTransportAllowanceSubmit} />;
+    if (view === "annual_leave") return <AnnualLeaveForm onCancel={() => setView("transactions")} onSubmit={() => setView("transactions")} />;
+    if (view === "add_form") return <AddTransactionForm onCancel={() => setView("transactions")} onSaved={() => setView("transactions")} />;
+    if (view === "attendance" || view === "attendance_report" || view === "exit_permission" || view === "hazer_system") return renderAttendanceHub();
+    if (view === "transport_allowance") return <TransportAllowanceForm onBack={() => setView("transactions")} onSubmitSuccess={handleTransportAllowanceSubmit} />;
     if (view === "outbox") return renderOutboxView();
     if (view === "inbox") return renderInboxView();
     if (view === "transaction_details") return renderTransactionDetailsView();
     if (view === "sales_kpi") return <SalesPerformancePage onBack={() => setView("dashboard")} />;
     if (view === "tasks") return <TasksPage onBack={() => setView("dashboard")} />;
+    if (view === "shortcuts") return renderShortcutsPage();
     return renderGenericPage(view);
   }
 
@@ -2110,7 +2210,7 @@ export default function ResponsiveDashboard() {
             setSelectedTransactionId(transactionId);
             setView('transaction_details');
           }}
-          transactions={outboxTransactions}
+          transactions={outboxTransactions as any}
         />
       );
     }
@@ -2147,7 +2247,7 @@ export default function ResponsiveDashboard() {
             setSelectedTransactionId(transactionId);
             setView('transaction_details');
           }}
-          transactions={inboxTransactions}
+          transactions={inboxTransactions as any}
           onTransactionUpdate={loadAllTransactions}
         />
       );
@@ -2179,11 +2279,12 @@ export default function ResponsiveDashboard() {
 
   function renderMainDashboard() {
     const bottomTabs = [
-      { key: "tasks",        label: "المهام",       icon: ListTodo,    view: "tasks_tracking" },
-      { key: "sales",        label: "المبيعات",     icon: BarChart3,   view: "sales_kpi" },
-      { key: "transactions", label: "المعاملات",    icon: ArrowLeftRight, view: "inbox" },
-      { key: "attendance",   label: "الحضور",       icon: Calendar,    view: "attendance_report" },
-      { key: "notices",      label: "التعميمات",    icon: Megaphone,   view: "notices" },
+      { key: "transactions",  label: "المعاملات",  icon: ArrowLeftRight, view: "transactions" },
+      { key: "tasks",         label: "المهام",     icon: ListTodo,       view: "tasks" },
+      { key: "attendance",    label: "الحضور",     icon: Calendar,       view: "attendance" },
+      { key: "sales_kpi",     label: "الأداء",     icon: TrendingUp,     view: "sales_kpi" },
+      { key: "notifications", label: "التنبيهات", icon: Bell,           view: "notifications" },
+      { key: "shortcuts",     label: "اختصارات",  icon: Zap,            view: "shortcuts" },
     ];
 
     return (
@@ -2191,82 +2292,62 @@ export default function ResponsiveDashboard() {
 
 
         {/* Body */}
-        <div className="py-4 pb-24 md:pb-6 flex md:gap-[100px] px-4 sm:px-6 md:pr-6 lg:pr-8 md:pl-[100px]" style={{ backgroundColor: "#F4F8FE" }}>
-          {/* Sidebar (ديسكتوب فقط) */}
-          <aside className={cn("hidden md:flex flex-col transition-all duration-300 shrink-0", sidebarCollapsed ? "w-14" : "w-52")}>
-            <nav className="relative rounded-2xl p-2 bg-white/70 backdrop-blur border border-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex-1 overflow-hidden flex flex-col">
-              {/* الشعار وزر الطي */}
-              <div className={cn("flex items-center mb-2 px-1 shrink-0", sidebarCollapsed ? "justify-center" : "justify-between")}>
-                {!sidebarCollapsed && (
-                  <img
-                    src="/logonew.svg"
-                    alt="الشعار"
-                    className="h-7 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setView('dashboard')}
-                    onError={(e) => { e.currentTarget.src = '/vite.svg'; }}
-                  />
-                )}
-                <button onClick={() => setSidebarCollapsed((v) => !v)} className="p-1.5 rounded-xl border border-neutral-200 hover:bg-neutral-100 shrink-0" aria-label="طي القائمة">
-                  <Menu className="h-4 w-4" />
-                </button>
+        <div className="py-4 pb-24 md:pb-6 flex gap-3 md:gap-4 px-2 sm:px-4 md:px-6" style={{ backgroundColor: "#F4F8FE" }}>
+          {/* Sidebar — Navigation Rail (ديسكتوب فقط) */}
+          <aside className="hidden md:flex flex-col w-[72px] shrink-0">
+            <nav className="sticky top-[72px] rounded-2xl py-3 px-1.5 bg-white/80 backdrop-blur border border-white/80 shadow-[0_2px_16px_rgba(0,0,0,0.07)] flex flex-col items-center gap-1 max-h-[calc(100vh-100px)] overflow-visible">
+              {/* Logo */}
+              <div className="mb-2 shrink-0">
+                <img
+                  src="/logonew.svg"
+                  alt="الشعار"
+                  className="h-8 w-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setView('dashboard')}
+                  onError={(e) => { e.currentTarget.src = '/vite.svg'; }}
+                />
               </div>
-              <div className="flex-1 overflow-y-auto pe-1 pt-[200px]">
-                {sidebarGroups.map((group) => (
-                  <div key={group.label} className="mb-1">
-                    <button onClick={() => toggleGroup(group.label)} className={cn("w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold tracking-widest uppercase text-neutral-400", sidebarCollapsed && "justify-center")} title={sidebarCollapsed ? group.label : undefined}>
-                      {!sidebarCollapsed && <span className="truncate text-right">{group.label}</span>}
-                      {!sidebarCollapsed ? (
-                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", openGroups[group.label] ? "rotate-0" : "-rotate-90")} />
-                      ) : (
-                        <ChevronDown className="h-3.5 w-3.5 opacity-40" />
-                      )}
-                    </button>
-                    <div className={cn(openGroups[group.label] ? "block" : "hidden")}>
-                      {group.items.map(({ key, title, icon: Icon }) => (
-                        <div key={key} className="group relative">
-                          <button
-                            onClick={() => { setActiveKey(key); if (key === "request_new") setView("add"); else setView(key); }}
-                            className={cn(
-                              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 outline-none",
-                              activeKey === key
-                                ? "bg-neutral-900 text-white shadow-sm" 
-                                : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-200"
-                            )}
-                            title={sidebarCollapsed ? title : undefined}
-                          >
-                            {key !== "sales_kpi" && <Icon className={cn("h-5 w-5 shrink-0 transition-colors", activeKey === key ? "text-white" : "text-neutral-400 group-hover:text-neutral-700")} />}
-                            {!sidebarCollapsed && <span className={cn("truncate text-right", key === "sales_kpi" && "w-full")}>{title}</span>}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+
+              {/* Nav items */}
+              <div className="flex-1 overflow-y-auto w-full space-y-0.5 scrollbar-hide">
+                {sidebarGroups.flatMap((g) => g.items).map(({ key, title, icon: Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setActiveKey(key);
+                      if (key === "tasks") setView("tasks");
+                      else if (key === "attendance") { setView("attendance"); setAttendanceSubTab('report'); }
+                      else if (key === "transactions") { setView("transactions"); setTransactionsSubTab('inbox'); }
+                      else setView(key);
+                    }}
+                    title={title}
+                    className={cn(
+                      "w-full flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl transition-all duration-150 group",
+                      activeKey === key
+                        ? "bg-neutral-900 text-white shadow-sm"
+                        : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800"
+                    )}
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span className="text-[9px] font-semibold leading-tight text-center w-full truncate px-0.5">{title}</span>
+                  </button>
                 ))}
               </div>
 
-              {/* حسابي - أسفل القائمة الجانبية */}
-              <div className="shrink-0 mt-2 pt-2 border-t border-neutral-100 relative">
+              {/* حسابي */}
+              <div className="shrink-0 w-full pt-2 border-t border-neutral-100 relative z-[75]">
                 <button
                   onClick={() => setAccountMenuOpen(v => !v)}
-                  className={cn("w-full flex items-center gap-2 px-2 py-2 rounded-xl hover:bg-neutral-100 transition-colors", sidebarCollapsed ? "justify-center" : "")}
+                  className="w-full flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl hover:bg-neutral-100 transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-full bg-[#B21063]/10 flex items-center justify-center shrink-0">
-                    <UserCircle className="h-5 w-5 text-[#B21063]" />
+                  <div className="w-6 h-6 rounded-full bg-[#B21063]/10 flex items-center justify-center shrink-0">
+                    <UserCircle className="h-4 w-4 text-[#B21063]" />
                   </div>
-                  {!sidebarCollapsed && (
-                    <>
-                      <div className="flex flex-col items-start flex-1 min-w-0">
-                        <span className="text-sm font-semibold text-neutral-700 truncate">محمد العبدالله</span>
-                        <span className="text-xs text-neutral-400">مدير المبيعات</span>
-                      </div>
-                      <ChevronDown className={cn("h-4 w-4 text-neutral-400 transition-transform duration-200 shrink-0", accountMenuOpen ? "rotate-180" : "")} />
-                    </>
-                  )}
+                  <span className="text-[9px] font-semibold text-neutral-400">حسابي</span>
                 </button>
                 {accountMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-[55]" onClick={() => setAccountMenuOpen(false)} />
-                    <div className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[60] overflow-hidden">
+                    <div className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[70] overflow-hidden">
                       <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50">
                         <p className="text-sm font-bold text-neutral-800">محمد العبدالله</p>
                         <p className="text-xs text-neutral-500">مدير المبيعات</p>
@@ -2343,17 +2424,8 @@ export default function ResponsiveDashboard() {
         </div>
 
         {/* ── Bottom Navigation (جوال فقط) ── */}
-        <nav className="fixed bottom-4 inset-x-0 z-30 md:hidden flex justify-center px-4 pointer-events-none">
-          <div
-            className="flex items-center gap-1 px-2 py-2 rounded-full pointer-events-auto"
-            style={{
-              background: "rgba(255,255,255,0.55)",
-              backdropFilter: "blur(24px) saturate(180%)",
-              WebkitBackdropFilter: "blur(24px) saturate(180%)",
-              border: "1px solid rgba(255,255,255,0.7)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9)",
-            }}
-          >
+        <nav className="fixed bottom-0 inset-x-0 z-30 md:hidden bg-white border-t border-neutral-200 safe-area-bottom">
+          <div className="flex items-stretch h-16">
             {bottomTabs.map((tab) => {
               const isActive = bottomTab === tab.key;
               return (
@@ -2362,28 +2434,17 @@ export default function ResponsiveDashboard() {
                   onClick={() => {
                     setBottomTab(tab.key);
                     setView(tab.view);
-                    setActiveKey(tab.view);
+                    setActiveKey(tab.key);
+                    if (tab.key === 'transactions') setTransactionsSubTab('inbox');
+                    if (tab.key === 'attendance') { setView('attendance'); setAttendanceSubTab('report'); }
                   }}
-                  className={cn(
-                    "flex flex-col items-center justify-center transition-all duration-300 rounded-full",
-                    isActive
-                      ? "gap-1 px-5 py-2.5"
-                      : "gap-0.5 px-4 py-2.5"
-                  )}
-                  style={isActive ? {
-                    background: "rgba(255,255,255,0.9)",
-                    boxShadow: "0 2px 12px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,1)",
-                    border: "1px solid rgba(255,255,255,0.8)",
-                  } : {}}
+                  className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative"
                 >
-                  <tab.icon className={cn(
-                    "transition-all duration-300",
-                    isActive ? "h-5 w-5 text-[#B21063]" : "h-4 w-4 text-neutral-400"
-                  )} />
-                  <span className={cn(
-                    "text-[10px] font-semibold whitespace-nowrap transition-all duration-300",
-                    isActive ? "text-[#B21063]" : "text-neutral-400"
-                  )}>
+                  {isActive && (
+                    <span className="absolute top-0 inset-x-2 h-0.5 rounded-b-full bg-[#B21063]" />
+                  )}
+                  <tab.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")} />
+                  <span className={cn("text-[10px] font-semibold transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")}>
                     {tab.label}
                   </span>
                 </button>

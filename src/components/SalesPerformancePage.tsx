@@ -483,15 +483,15 @@ function KpiCard({ title, value, sub, icon: Icon, color = "#4D8AFF", progress }:
   const displayValue = formatAnimated(animated, suffix, prefix);
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-3 sm:p-4 flex flex-col gap-1.5 hover:shadow-md transition-shadow" style={{ borderRadius: 12 }}>
+    <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-2 sm:p-4 flex flex-col gap-1 sm:gap-1.5 hover:shadow-md transition-shadow" style={{ borderRadius: 12 }}>
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[12px] sm:text-[14px] text-neutral-700 font-semibold leading-tight">{title}</span>
-        <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 bg-neutral-100" style={{ borderRadius: 8 }}>
-          <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-700" />
+        <span className="text-[10px] sm:text-[14px] text-neutral-700 font-semibold leading-tight line-clamp-1">{title}</span>
+        <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 bg-neutral-100" style={{ borderRadius: 8 }}>
+          <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-neutral-700" />
         </div>
       </div>
-      <div className="text-xl sm:text-xl font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
-      {sub && <div className="text-[12px] sm:text-xs text-neutral-500 font-medium">{sub}</div>}
+      <div className="text-sm sm:text-xl font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
+      {sub && <div className="text-[10px] sm:text-xs text-neutral-500 font-medium truncate">{sub}</div>}
       {progress !== undefined && (
         <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 overflow-hidden">
           <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: color }} />
@@ -1874,7 +1874,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-neutral-0 flex flex-col -mx-4 -mt-4 w-[calc(100%+2rem)] sm:mx-0 sm:mt-0 sm:w-full">
+    <div dir="rtl" className="min-h-screen bg-neutral-0 flex flex-col -mx-2 -mt-4 w-[calc(100%+1rem)] sm:mx-0 sm:mt-0 sm:w-full">
       {/* ── Fixed Header (filters + tabs) ── */}
       <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
         <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
@@ -1893,7 +1893,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
             className="overflow-hidden"
           >
           <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
-            <div className="flex items-center gap-1 bg-neutral-100 rounded-full p-1 min-w-0">
+            <div className="flex items-center gap-1 bg-neutral-[0] rounded-full p-1 min-w-0">
             {([
               ["team","الفريق", Users],
               ["areas","المناطق", MapPin],
@@ -1907,7 +1907,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 layout
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0",
+                  "flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0",
                   filterType === type
                     ? "bg-neutral-900 text-white shadow-sm"
                     : "bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900"
@@ -2053,7 +2053,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     ["table", "تفصيلي", Table]
                   ] as const).map(([mode, label, IconComponent]) => (
                     <button key={mode} onClick={() => setViewMode(mode)}
-                      className={cn("px-1.5 sm:px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-[10px] font-semibold transition-all flex items-center gap-1",
+                      className={cn("px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-[10px] font-semibold transition-all flex items-center gap-1",
                         viewMode === mode ? "bg-neutral-800 text-white shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
                       title={label}>
                       <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -2365,7 +2365,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       if (sales === 0 && target === 0) return null;
                       return noChevron ? (
                         <div key={id} className="flex items-center gap-3 px-2 py-1.5">
-                          <div className="w-32 shrink-0">
+                          <div className="w-20 sm:w-32 shrink-0">
                             <span className="text-xs font-semibold text-neutral-700 truncate block">{name}</span>
                             <span className="text-[11px] text-neutral-400 font-medium">{formatNum(sales)}</span>
                           </div>
@@ -2377,7 +2377,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       ) : (
                         <button key={id} onClick={onDrill}
                           className="flex items-center gap-3 w-full text-right hover:bg-neutral-50 rounded-xl px-2 py-1.5 transition-colors group">
-                          <div className="w-32 shrink-0">
+                          <div className="w-20 sm:w-32 shrink-0">
                             <span className="text-xs font-semibold text-neutral-700 truncate block group-hover:text-[#B21063] transition-colors">{name}</span>
                             <span className="text-[11px] text-neutral-400 font-medium">{formatNum(sales)}</span>
                           </div>
