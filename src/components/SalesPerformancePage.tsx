@@ -1378,12 +1378,12 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0, y: -6, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -6, scale: 0.98 }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.15 }}
           ref={panelRef}
-          className="bg-white rounded-2xl border border-neutral-200 shadow-xl p-3 sm:p-4"
+          className="dropdown-menu bg-white rounded-2xl border border-neutral-200 shadow-xl p-3 sm:p-4"
           style={{
             position: "fixed",
             top: dropdownPos.top,
@@ -1539,7 +1539,7 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
             width: "min(220px, calc(100vw - 2rem))",
             maxWidth: "calc(100vw - 2rem)",
           }}
-          className="bg-white border border-neutral-200 rounded-2xl shadow-xl overflow-hidden"
+          className="dropdown-menu bg-white border border-neutral-200 rounded-2xl shadow-xl overflow-hidden"
           dir="rtl"
         >
           <div className="p-2 border-b border-neutral-100">

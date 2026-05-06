@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent zoom on iOS for dropdown menus */
+@media screen and (max-width: 768px) {
+  .dropdown-menu {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .dropdown-menu * {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent zoom on all interactive elements */
+  button, input, select, textarea {
+    touch-action: manipulation;
+    font-size: 12px !important;
+  }
+  
+  /* Prevent zoom on all clickable elements */
+  [role="button"], [onclick], .cursor-pointer {
+    touch-action: manipulation;
+  }
+  
+  /* Global prevention */
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection for inputs */
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 /* SF Arabic Light - للنصوص الخفيفة */
 @font-face {
   font-family: 'SF Arabic';
