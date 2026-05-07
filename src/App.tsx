@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import AttendanceDashboard from "./components/AttendanceDashboard";
 import HazerSystem from "./components/HazerSystem";
@@ -12,7 +12,7 @@ import SalesPerformancePage from "./components/SalesPerformancePage";
 import TasksPage from "./components/TasksPage";
 import SaudiCalendar from "./components/SaudiCalendar";
 import { supabase } from "./lib/supabase";
-import { Bell, Search, Settings, Menu, LogOut, Inbox, Send, FileText, Users, ShieldCheck, ClipboardList, Award, Accessibility, GaugeCircle, Sparkles, ChevronRight, ChevronLeft, ChevronDown, Upload, X, Save, Check, ArrowRight, Tag, Calendar, Building2, Shield, AlertTriangle, Clock, CheckCircle, Phone, RefreshCcw, Archive, FilePlus, Mail, BarChart3, LayoutDashboard, ArrowLeftRight, ExternalLink, Globe, Database, MessageSquare, TrendingUp, FileSpreadsheet, Briefcase, UserCheck, CreditCard, Home, Car, Plane, Heart, GraduationCap, Baby, MapPin, Zap, User, Lock, Eye, EyeOff, Smartphone, CircleUser as UserCircle, ListTodo, Megaphone, Languages, Type } from "lucide-react";
+import { Bell, Search, Settings, Menu, LogOut, Inbox, Send, FileText, Users, ShieldCheck, ClipboardList, Award, Accessibility, GaugeCircle, Sparkles, ChevronRight, ChevronLeft, ChevronDown, Upload, X, Save, Check, ArrowRight, Tag, Calendar, Building2, Shield, AlertTriangle, Clock, CheckCircle, Phone, RefreshCcw, Archive, FilePlus, Mail, BarChart3, LayoutDashboard, ArrowLeftRight, ExternalLink, Globe, Database, MessageSquare, TrendingUp, FileSpreadsheet, Briefcase, UserCheck, CreditCard, Home, Car, Plane, Heart, GraduationCap, Baby, MapPin, Zap, User, Lock, Eye, EyeOff, Smartphone, CircleUser as UserCircle, ListTodo, Megaphone, Languages, Type, Moon, Sun } from "lucide-react";
 
 // ====== مجموعات القائمة الجانبية ======
 const sidebarGroups = [
@@ -751,7 +751,21 @@ export default function ResponsiveDashboard() {
     const n = saved ? Number(saved) : 100;
     return (n >= 75 && n <= 150) ? n : 100;
   });
-  const dark = false;
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem("app-dark-mode");
+    return saved === "true";
+  });
+
+  // Apply dark mode to html element
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem("app-dark-mode", dark.toString());
+  }, [dark]);
+
   const [activeKey, setActiveKey] = useState("dashboard");
   const [view, setView] = useState("dashboard"); // dashboard | add | attendance_report | ...
   const [transactionsSubTab, setTransactionsSubTab] = useState<'new'|'inbox'|'outbox'|'archive'>('inbox');
@@ -2362,6 +2376,11 @@ export default function ResponsiveDashboard() {
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
                           <Settings className="h-4 w-4 text-neutral-400" />
                           الإعدادات
+                        </button>
+                        <button onClick={() => { setDark(!dark); setAccountMenuOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
+                          {dark ? <Sun className="h-4 w-4 text-neutral-400" /> : <Moon className="h-4 w-4 text-neutral-400" />}
+                          {dark ? "الوضع الفاتح" : "الوضع الداكن"}
                         </button>
                         {/* حجم الخط */}
                         <div className="px-4 py-3 border-t border-neutral-100">

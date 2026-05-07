@@ -57,9 +57,9 @@ export default function TasksPage({ onBack }: TasksPageProps) {
     : MOCK_TASKS.filter(t => t.status === activeTab);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-neutral-50">
+    <div dir="rtl" className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
       {/* Header */}
-      <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+      <div className="sticky top-0 z-40 md:z-30 bg-white dark:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-700 rounded-xl">
         <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
           <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
             <div className="flex items-center gap-1 bg-neutral-0 rounded-full p-1 min-w-0">
@@ -82,17 +82,17 @@ export default function TasksPage({ onBack }: TasksPageProps) {
 
       {/* Content */}
       <div className="max-w-[1400px] mx-auto px-2 sm:px-4 py-4">
-        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm overflow-hidden">
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-neutral-50 border-b border-neutral-100">
-                  <th className="px-4 py-3 text-right font-bold text-neutral-600">المهمة</th>
-                  <th className="px-4 py-3 text-right font-bold text-neutral-600">الحالة</th>
-                  <th className="px-4 py-3 text-right font-bold text-neutral-600">الأولوية</th>
-                  <th className="px-4 py-3 text-right font-bold text-neutral-600">الموعد النهائي</th>
-                  <th className="px-4 py-3 text-right font-bold text-neutral-600">المسؤول</th>
+                <tr className="bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-600">
+                  <th className="px-4 py-3 text-right font-bold text-neutral-600 dark:text-neutral-300">المهمة</th>
+                  <th className="px-4 py-3 text-right font-bold text-neutral-600 dark:text-neutral-300">الحالة</th>
+                  <th className="px-4 py-3 text-right font-bold text-neutral-600 dark:text-neutral-300">الأولوية</th>
+                  <th className="px-4 py-3 text-right font-bold text-neutral-600 dark:text-neutral-300">الموعد النهائي</th>
+                  <th className="px-4 py-3 text-right font-bold text-neutral-600 dark:text-neutral-300">المسؤول</th>
                 </tr>
               </thead>
               <tbody>
@@ -105,13 +105,13 @@ export default function TasksPage({ onBack }: TasksPageProps) {
                 ) : (
                   filteredTasks.map((task, idx) => (
                     <tr key={task.id} className={cn(
-                      "border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer",
-                      idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30"
+                      "border-b border-neutral-50 dark:border-neutral-700 hover:bg-blue-50/30 dark:hover:bg-neutral-700/30 transition-colors cursor-pointer",
+                      idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50/30 dark:bg-neutral-700/30"
                     )}>
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-semibold text-neutral-800">{task.title}</p>
-                          <p className="text-xs text-neutral-500 mt-1">{task.description}</p>
+                          <p className="font-semibold text-neutral-800 dark:text-neutral-200">{task.title}</p>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{task.description}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -124,13 +124,13 @@ export default function TasksPage({ onBack }: TasksPageProps) {
                           {PRIORITY_CONFIG[task.priority].label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-neutral-700">
+                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300">
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-neutral-400" />
+                          <Calendar className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
                           <span className="text-xs">{task.dueDate}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-neutral-700 text-xs">
+                      <td className="px-4 py-3 text-neutral-700 dark:text-neutral-300 text-xs">
                         {task.assignee}
                       </td>
                     </tr>
@@ -141,8 +141,8 @@ export default function TasksPage({ onBack }: TasksPageProps) {
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-3 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between">
-            <span className="text-xs text-neutral-500">
+          <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-700 border-t border-neutral-100 dark:border-neutral-600 flex items-center justify-between">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {filteredTasks.length} مهمة
             </span>
             <button className="flex items-center gap-1 text-xs font-semibold text-[#B21063] hover:text-[#8B0C4D] transition-colors">
