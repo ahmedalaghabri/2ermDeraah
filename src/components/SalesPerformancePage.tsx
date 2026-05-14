@@ -22,9 +22,9 @@ import {
   Filter,
   MoreVertical,
   Users,
-  User,
-  Building2,
-  ShieldCheck,
+  Shield,
+  Store,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -483,17 +483,17 @@ function KpiCard({ title, value, sub, icon: Icon, color = "#4D8AFF", progress }:
   const displayValue = formatAnimated(animated, suffix, prefix);
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-100 shadow-sm p-2 sm:p-4 flex flex-col gap-1 sm:gap-1.5 hover:shadow-md transition-shadow" style={{ borderRadius: 12 }}>
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700 shadow-sm p-2 sm:p-4 flex flex-col gap-1 sm:gap-1.5 hover:shadow-md transition-shadow" style={{ borderRadius: 12 }}>
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[10px] sm:text-[14px] text-neutral-700 font-semibold leading-tight line-clamp-1">{title}</span>
-        <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 bg-neutral-100" style={{ borderRadius: 8 }}>
-          <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-neutral-700" />
+        <span className="text-[10px] sm:text-[14px] text-neutral-700 dark:text-neutral-300 font-semibold leading-tight line-clamp-1">{title}</span>
+        <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 bg-neutral-100 dark:bg-neutral-700" style={{ borderRadius: 8 }}>
+          <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-neutral-700 dark:text-neutral-300" />
         </div>
       </div>
-      <div className="text-sm sm:text-xl font-bold text-neutral-800 tracking-tight tabular-nums">{displayValue}</div>
-      {sub && <div className="text-[10px] sm:text-xs text-neutral-500 font-medium truncate">{sub}</div>}
+      <div className="text-sm sm:text-xl font-bold text-neutral-800 dark:text-neutral-200 tracking-tight tabular-nums">{displayValue}</div>
+      {sub && <div className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-medium truncate">{sub}</div>}
       {progress !== undefined && (
-        <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+        <div className="h-1 sm:h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
           <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: color }} />
         </div>
       )}
@@ -543,6 +543,8 @@ interface DrillTableProps {
   tablePage: number; setTablePage: (fn: (p: number) => number) => void; totalPages: number;
   nameLabel?: string; drillLabel?: string;
   filterType?: FilterType;
+  searchQuery?: string;
+  onClearSearch?: () => void;
 }
 
 function DrillTable({
@@ -551,6 +553,8 @@ function DrillTable({
   sortKey, sortDir, toggleSort, tablePage, setTablePage, totalPages,
   nameLabel = "الاسم", drillLabel = "تفاصيل",
   filterType = "team",
+  searchQuery = "",
+  onClearSearch,
   mobileTableMode,
   setMobileTableMode,
 }: DrillTableProps & { mobileTableMode?: "default" | "pinned" | "cards" | "single", setMobileTableMode?: (mode: "default" | "pinned" | "cards" | "single") => void }) {
@@ -604,6 +608,8 @@ function DrillTable({
   const [colMenuOpen, setColMenuOpen] = useState(false);
   const [optGroupOpen, setOptGroupOpen] = useState(false);
   const visibleCols = activeCols.filter(col => !hiddenCols.has(col.key));
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const hasSearch = normalizedSearch.length > 0;
 
   // ── Column filter states ──
   type ColFilter = { type: "numeric"; min: string; max: string } | { type: "text"; value: string };
@@ -641,7 +647,29 @@ function DrillTable({
   }
 
   // ── Apply column filters, sort & page ──
-  const filteredRows = rows.filter(row => {
+  const searchedRows = hasSearch ? rows.filter(row => {
+    const haystack = [
+      row.name,
+      row.regionName,
+      row.areaName,
+      row.supervisorName,
+      row.showroomName,
+      row.sales,
+      row.target,
+      row.prevSales,
+      row.invoices,
+      row.pieces,
+      row.customers,
+      row.avgInvoice,
+      row.avgPiece,
+    ]
+      .map(v => String(v ?? ""))
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(normalizedSearch);
+  }) : rows;
+
+  const filteredRows = searchedRows.filter(row => {
     for (const [key, filter] of Object.entries(colFilters)) {
       const f = filter as any;
       if (f.type === "numeric") {
@@ -675,32 +703,32 @@ function DrillTable({
         <ChevronLeft className="w-3.5 h-3.5 text-neutral-300 shrink-0" />
       </div>
     );
-    if (key === "regionName") return <span className="text-neutral-500 text-[11px] whitespace-nowrap">{row.regionName ?? "—"}</span>;
-    if (key === "areaName") return <span className="text-neutral-500 text-[11px] whitespace-nowrap">{row.areaName ?? "—"}</span>;
-    if (key === "supervisorName") return <span className="text-neutral-500 text-[11px] whitespace-nowrap">{row.supervisorName ?? "—"}</span>;
-    if (key === "showroomName") return <span className="text-neutral-500 text-[11px] whitespace-nowrap">{row.showroomName ?? "—"}</span>;
-    if (key === "sales") return <span className="text-neutral-700 font-semibold tabular-nums">{formatFull(Math.round(row.sales))}</span>;
-    if (key === "target") return <span className="text-neutral-500 tabular-nums">{formatFull(row.target)}</span>;
-    if (key === "invoices") return <span className="text-neutral-600 tabular-nums">{formatFull(row.invoices)}</span>;
-    if (key === "avgInvoice") return <span className="text-neutral-600 tabular-nums">{formatFull(row.avgInvoice)}</span>;
-    if (key === "pieces") return <span className="text-neutral-600 tabular-nums">{formatFull(row.pieces)}</span>;
-    if (key === "avgPiece") return <span className="text-neutral-600 tabular-nums">{row.avgPiece}</span>;
-    if (key === "customers") return <span className="text-neutral-600 tabular-nums">{row.customers}</span>;
-    if (key === "prevSales") return <span className="text-neutral-500 tabular-nums">{formatFull(Math.round(row.prevSales))}</span>;
+    if (key === "regionName") return <span className="text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">{row.regionName ?? "—"}</span>;
+    if (key === "areaName") return <span className="text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">{row.areaName ?? "—"}</span>;
+    if (key === "supervisorName") return <span className="text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">{row.supervisorName ?? "—"}</span>;
+    if (key === "showroomName") return <span className="text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">{row.showroomName ?? "—"}</span>;
+    if (key === "sales") return <span className="text-neutral-700 dark:text-neutral-300 font-semibold tabular-nums">{formatFull(Math.round(row.sales))}</span>;
+    if (key === "target") return <span className="text-neutral-500 dark:text-neutral-400 tabular-nums">{formatFull(row.target)}</span>;
+    if (key === "invoices") return <span className="text-neutral-600 dark:text-neutral-400 tabular-nums">{formatFull(row.invoices)}</span>;
+    if (key === "avgInvoice") return <span className="text-neutral-600 dark:text-neutral-400 tabular-nums">{formatFull(row.avgInvoice)}</span>;
+    if (key === "pieces") return <span className="text-neutral-600 dark:text-neutral-400 tabular-nums">{formatFull(row.pieces)}</span>;
+    if (key === "avgPiece") return <span className="text-neutral-600 dark:text-neutral-400 tabular-nums">{row.avgPiece}</span>;
+    if (key === "customers") return <span className="text-neutral-600 dark:text-neutral-400 tabular-nums">{row.customers}</span>;
+    if (key === "prevSales") return <span className="text-neutral-500 dark:text-neutral-400 tabular-nums">{formatFull(Math.round(row.prevSales))}</span>;
     return null;
   }
 
   function renderFooterCell(key: string) {
-    if (key === "name") return <span className="text-neutral-800 font-bold">الإجمالي</span>;
+    if (key === "name") return <span className="text-neutral-800 dark:text-neutral-200 font-bold">الإجمالي</span>;
     if (["regionName","areaName","supervisorName","showroomName"].includes(key)) return null;
-    if (key === "sales") return <span className="text-neutral-800 tabular-nums">{formatFull(Math.round(totalSales))}</span>;
-    if (key === "target") return <span className="text-neutral-700 tabular-nums">{formatFull(totalTarget)}</span>;
-    if (key === "invoices") return <span className="text-neutral-700 tabular-nums">{formatFull(totalInvoices)}</span>;
-    if (key === "avgInvoice") return <span className="text-neutral-700 tabular-nums">{formatFull(totalAvgInvoice)}</span>;
-    if (key === "pieces") return <span className="text-neutral-700 tabular-nums">{formatFull(totalPieces)}</span>;
-    if (key === "avgPiece") return <span className="text-neutral-700 tabular-nums">{totalAvgPiece}</span>;
-    if (key === "customers") return <span className="text-neutral-700 tabular-nums">{totalCustomers}</span>;
-    if (key === "prevSales") return <span className="text-neutral-700 tabular-nums">{formatFull(Math.round(totalPrevSales))}</span>;
+    if (key === "sales") return <span className="text-neutral-800 dark:text-neutral-200 tabular-nums">{formatFull(Math.round(totalSales))}</span>;
+    if (key === "target") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{formatFull(totalTarget)}</span>;
+    if (key === "invoices") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{formatFull(totalInvoices)}</span>;
+    if (key === "avgInvoice") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{formatFull(totalAvgInvoice)}</span>;
+    if (key === "pieces") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{formatFull(totalPieces)}</span>;
+    if (key === "avgPiece") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{totalAvgPiece}</span>;
+    if (key === "customers") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{totalCustomers}</span>;
+    if (key === "prevSales") return <span className="text-neutral-700 dark:text-neutral-300 tabular-nums">{formatFull(Math.round(totalPrevSales))}</span>;
     return null;
   }
 
@@ -714,8 +742,8 @@ function DrillTable({
         <div className="overflow-x-auto">
           <table className="w-full text-[11px] sm:text-[13px]" style={{ minWidth: 320 }}>
             <thead>
-              <tr className="bg-neutral-50 border-b border-neutral-100">
-                <th className="px-2 py-2 text-right font-bold text-neutral-600 sticky right-0 bg-white z-10 border-l border-neutral-200">
+              <tr className="bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700">
+                <th className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400 sticky right-0 bg-white dark:bg-neutral-800 z-10 border-l border-neutral-200 dark:border-neutral-600">
                   <div className="flex items-center gap-1">
                     <Pin className="w-3 h-3 text-[#B21063]" />
                     <span>{mainCol.label}</span>
@@ -723,23 +751,23 @@ function DrillTable({
                 </th>
                 {otherCols.map(col => (
                   <th key={col.key} onClick={() => toggleSort(col.key)}
-                    className="px-2 py-2 text-right font-bold text-neutral-600 cursor-pointer hover:bg-neutral-100 transition-colors select-none whitespace-nowrap">
+                    className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors select-none whitespace-nowrap">
                     <div className="flex items-center justify-between gap-1 w-full">
                       <ArrowUpDown className={cn("w-2 h-2.5 order-last", sortKey === col.key ? "text-[#B21063]" : "text-neutral-300")} />
                       <span>{col.label}</span>
                     </div>
                   </th>
                 ))}
-                <th className="px-2 py-2 text-right font-bold text-neutral-600">تحقيق</th>
+                <th className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400">تحقيق</th>
               </tr>
             </thead>
             <tbody>
               {paged.map((row, idx) => {
                 const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
                 return (
-                  <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}
+                  <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}
                     onClick={() => onDrill(row.id, row.name)}>
-                    <td className="px-2 py-2 sticky right-0 bg-white z-10 border-l border-neutral-200 font-medium text-neutral-800">
+                    <td className="px-2 py-2 sticky right-0 bg-white dark:bg-neutral-800 z-10 border-l border-neutral-200 dark:border-neutral-600 font-medium text-neutral-800 dark:text-neutral-200">
                       {renderCell(row, mainCol.key)}
                     </td>
                     {otherCols.map(col => (
@@ -766,34 +794,34 @@ function DrillTable({
         {paged.map((row, idx) => {
           const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
           return (
-            <div key={row.id} className={cn("bg-white border border-neutral-100 rounded-xl p-3 hover:shadow-md transition-shadow cursor-pointer", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}
+            <div key={row.id} className={cn("bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 rounded-xl p-3 hover:shadow-md transition-shadow cursor-pointer", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}
               onClick={() => onDrill(row.id, row.name)}>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-bold text-sm text-neutral-800 truncate flex-1">{row.name}</h4>
+                <h4 className="font-bold text-sm text-neutral-800 dark:text-neutral-200 truncate flex-1">{row.name}</h4>
                 <span className={cn("text-xs font-bold px-2 py-1 rounded-lg mr-2", pctBg(pct))}>{pct}%</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">المبيعات:</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">المبيعات:</span>
                   <span className="font-semibold">{formatFull(Math.round(row.sales))}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">الهدف:</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">الهدف:</span>
                   <span className="font-semibold">{formatFull(row.target)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">الفواتير:</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">الفواتير:</span>
                   <span className="font-semibold">{formatFull(row.invoices)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">العملاء:</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">العملاء:</span>
                   <span className="font-semibold">{row.customers}</span>
                 </div>
               </div>
               {hierarchyCols.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-neutral-100 flex flex-wrap gap-2">
+                <div className="mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700 flex flex-wrap gap-2">
                   {hierarchyCols.map(col => (
-                    <span key={col.key} className="text-[12px] text-neutral-500 bg-neutral-50 px-2 py-1 rounded">
+                    <span key={col.key} className="text-[12px] text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-700 px-2 py-1 rounded">
                       {renderCell(row, col.key)}
                     </span>
                   ))}
@@ -812,11 +840,11 @@ function DrillTable({
         {paged.map((row, idx) => {
           const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
           return (
-            <div key={row.id} className={cn("bg-white border border-neutral-100 rounded-xl overflow-hidden", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}>
-              <div className="px-3 py-2 bg-neutral-50 border-b border-neutral-100 cursor-pointer hover:bg-neutral-100 transition-colors"
+            <div key={row.id} className={cn("bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 rounded-xl overflow-hidden", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}>
+              <div className="px-3 py-2 bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                 onClick={() => onDrill(row.id, row.name)}>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-sm text-neutral-800 truncate flex-1">{row.name}</h4>
+                  <h4 className="font-bold text-sm text-neutral-800 dark:text-neutral-200 truncate flex-1">{row.name}</h4>
                   <span className={cn("text-xs font-bold px-2 py-1 rounded-lg mr-2", pctBg(pct))}>{pct}%</span>
                   <ChevronLeft className="w-4 h-4 text-neutral-400" />
                 </div>
@@ -824,8 +852,8 @@ function DrillTable({
               <div className="divide-y divide-neutral-100">
                 {activeCols.map(col => (
                   <div key={col.key} className="px-3 py-2 flex justify-between items-center">
-                    <span className="text-xs font-medium text-neutral-600">{col.label}</span>
-                    <span className="text-xs text-neutral-800">{renderCell(row, col.key)}</span>
+                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{col.label}</span>
+                    <span className="text-xs text-neutral-800 dark:text-neutral-200">{renderCell(row, col.key)}</span>
                   </div>
                 ))}
               </div>
@@ -837,48 +865,50 @@ function DrillTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden mx-2">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
-        <h3 className="text-sm font-bold text-neutral-800">{title}</h3>
+    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm overflow-hidden mx-2">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+        <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">{title}</h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500 font-medium">
-            {activeFilterCount > 0 ? `${sorted.length} / ${rowCount}` : `${rowCount}`} سجل
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+            {activeFilterCount > 0 || hasSearch ? `${sorted.length} / ${rowCount}` : `${rowCount}`} سجل
             {activeFilterCount > 0 && (
               <button onClick={() => setColFilters({})} className="mr-1.5 text-[12px] text-red-500 hover:text-red-700 font-normal">× مسح الفلاتر ({activeFilterCount})</button>
             )}
+            {hasSearch && (
+              <button onClick={() => onClearSearch?.()} className="mr-1.5 text-[12px] text-red-500 hover:text-red-700 font-normal">× مسح البحث</button>
+            )}
           </span>
-          {/* Options toggle button */}
+          {/* Options toggle button — mobile only */}
           <button onClick={() => setOptGroupOpen(v => !v)}
-            className={cn("p-1.5 rounded-lg transition-colors",
-              optGroupOpen ? "bg-neutral-900 text-white" : "text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100")}>
+            className={cn("p-1.5 rounded-lg transition-colors sm:hidden",
+              optGroupOpen ? "bg-neutral-900 text-white" : "text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700")}>
             <MoreVertical className="w-3.5 h-3.5" />
           </button>
 
-          {/* Options icon group */}
-          {optGroupOpen && (
-          <div className="flex items-center gap-0.5 bg-neutral-100 rounded-lg p-0.5">
+          {/* Options icon group — always visible on desktop */}
+          <div className={cn("flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-700 rounded-lg p-0.5", !optGroupOpen && "hidden sm:flex")}>
             {/* Column picker */}
             <div className="relative">
               <button onClick={() => setColMenuOpen(v => !v)}
                 title="إظهار/إخفاء الأعمدة"
                 className={cn("px-1.5 py-1 rounded-md text-xs font-medium transition-all flex items-center",
-                  colMenuOpen ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700")}>
+                  colMenuOpen ? "bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
                 <SlidersHorizontal className="w-3 h-3" />
               </button>
               {colMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-[55]" onClick={() => setColMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-[60] bg-white border border-neutral-200 rounded-xl shadow-xl p-2 min-w-[140px]">
-                    <p className="text-[12px] font-bold text-neutral-400 uppercase px-2 pb-1">إظهار الأعمدة</p>
+                  <div className="absolute left-0 top-full mt-1 z-[60] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-xl shadow-xl p-2 min-w-[140px]">
+                    <p className="text-[12px] font-bold text-neutral-400 dark:text-neutral-500 dark:text-neutral-400 uppercase px-2 pb-1">إظهار الأعمدة</p>
                     {activeCols.filter(col => col.key !== "name").map(col => (
                       <button key={col.key}
                         onClick={() => setHiddenCols(prev => { const next = new Set(prev); next.has(col.key) ? next.delete(col.key) : next.add(col.key); return next; })}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50">
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 dark:bg-neutral-700">
                         <div className={cn("w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors",
                           !hiddenCols.has(col.key) ? "bg-neutral-900 border-neutral-900" : "border-neutral-300")}>
                           {!hiddenCols.has(col.key) && <Check className="w-2.5 h-2.5 text-white" />}
                         </div>
-                        <span className="text-xs text-neutral-700">{col.label}</span>
+                        <span className="text-xs text-neutral-700 dark:text-neutral-300">{col.label}</span>
                       </button>
                     ))}
                   </div>
@@ -897,7 +927,7 @@ function DrillTable({
                 ].map(([mode, label, Icon]) => (
                   <button key={mode} onClick={() => setMobileTableMode(mode as "default" | "pinned" | "cards" | "single")}
                     className={cn("px-1.5 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1",
-                      mobileTableMode === mode ? "bg-white text-neutral-800 shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
+                      mobileTableMode === mode ? "bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300")}
                     title={label}>
                     <Icon className="w-3 h-3" />
                   </button>
@@ -905,19 +935,18 @@ function DrillTable({
               </>
             )}
           </div>
-          )}
         </div>
       </div>
-      
+
       {/* Default table view */}
       {(!mobileTableMode || mobileTableMode === "default") && (
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative">
         <table className="w-full text-[11px] sm:text-[13px]" style={{ minWidth: 600 }}>
-          <thead>
-            <tr className="bg-neutral-50 border-b border-neutral-100">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700">
               {visibleCols.map(col => (
                 <th key={col.key}
-                  className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 hover:bg-neutral-50 transition-colors select-none whitespace-nowrap text-xs sm:text-sm">
+                  className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:bg-neutral-700 transition-colors select-none whitespace-nowrap text-xs sm:text-sm bg-neutral-50 dark:bg-neutral-700">
                   <div className="flex items-center justify-between gap-0.5 w-full">
                     <div className="flex items-center gap-0.5 order-last shrink-0">
                       <button onClick={() => toggleSort(col.key)} className="p-0.5 rounded hover:bg-neutral-200">
@@ -925,7 +954,7 @@ function DrillTable({
                       </button>
                       <button onClick={e => openFilter(col.key, e)}
                         className={cn("p-0.5 rounded hover:bg-neutral-200 transition-colors",
-                          isFilterActive(col.key) ? "text-[#B21063]" : "text-neutral-300 hover:text-neutral-500")}>
+                          isFilterActive(col.key) ? "text-[#B21063]" : "text-neutral-300 hover:text-neutral-500 dark:text-neutral-400")}>
                         <Filter className="w-2 h-2.5 sm:w-2.5 sm:h-2.5" />
                       </button>
                     </div>
@@ -933,15 +962,15 @@ function DrillTable({
                   </div>
                 </th>
               ))}
-              <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">تحقيق</th>
-              <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">{drillLabel}</th>
+              <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm bg-neutral-50 dark:bg-neutral-700">تحقيق</th>
+              <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm bg-neutral-50 dark:bg-neutral-700">{drillLabel}</th>
             </tr>
           </thead>
           <tbody>
             {paged.map((row, idx) => {
               const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
               return (
-                <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}
+                <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}
                   onClick={() => onDrill(row.id, row.name)}>
                   {visibleCols.map(col => (
                     <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm">
@@ -959,18 +988,18 @@ function DrillTable({
             })}
           </tbody>
           <tfoot>
-            <tr className="bg-neutral-50 border-t-2 border-neutral-200 font-bold">
+            <tr className="md:sticky md:bottom-0 z-20 bg-neutral-100 dark:bg-neutral-700 border-t-2 border-neutral-300 dark:border-neutral-600 font-bold shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
               {visibleCols.map(col => (
-                <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm">
+                <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm bg-neutral-100 dark:bg-neutral-700">
                   {renderFooterCell(col.key)}
                 </td>
               ))}
-              <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap">
+              <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap bg-neutral-100 dark:bg-neutral-700">
                 <span className="text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg" style={{ backgroundColor: "#00C9A7", color: "white" }}>
                   {achievementPct}%
                 </span>
               </td>
-              <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap">
+              <td className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap bg-neutral-100 dark:bg-neutral-700">
                 <span className="text-[12px] sm:text-[12px] text-neutral-400 font-medium">—</span>
               </td>
             </tr>
@@ -985,25 +1014,25 @@ function DrillTable({
           <div className="overflow-x-auto">
             <table className="w-full text-[11px]" style={{ minWidth: 600 }}>
               <thead>
-                <tr className="bg-neutral-50 border-b border-neutral-100">
+                <tr className="bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700">
                   {activeCols.map(col => (
                     <th key={col.key} onClick={() => toggleSort(col.key)}
-                      className="px-2 py-2 text-right font-bold text-neutral-600 cursor-pointer hover:bg-neutral-100 transition-colors select-none whitespace-nowrap">
+                      className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors select-none whitespace-nowrap">
                       <div className="flex items-center justify-between gap-1 w-full">
                         <ArrowUpDown className={cn("w-2 h-2.5 order-last", sortKey === col.key ? "text-[#B21063]" : "text-neutral-300")} />
                         <span>{col.label}</span>
                       </div>
                     </th>
                   ))}
-                  <th className="px-2 py-2 text-right font-bold text-neutral-600">تحقيق</th>
-                  <th className="px-2 py-2 text-right font-bold text-neutral-600">{drillLabel}</th>
+                  <th className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400">تحقيق</th>
+                  <th className="px-2 py-2 text-right font-bold text-neutral-600 dark:text-neutral-400">{drillLabel}</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((row, idx) => {
                   const pct = row.target > 0 ? Math.round((row.sales / row.target) * 100) : 0;
                   return (
-                    <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}
+                    <tr key={row.id} className={cn("border-b border-neutral-50 hover:bg-blue-50/30 transition-colors cursor-pointer", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}
                       onClick={() => onDrill(row.id, row.name)}>
                       {activeCols.map(col => (
                         <td key={col.key} className="px-2 py-2 whitespace-nowrap">
@@ -1031,14 +1060,14 @@ function DrillTable({
       </div>
       
       {pages > 1 && (
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-t border-neutral-100">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-t border-neutral-100 dark:border-neutral-700">
           <button onClick={() => setTablePage(p => Math.max(1, p - 1))} disabled={tablePage === 1}
-            className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 disabled:opacity-30 hover:text-neutral-800 transition-colors font-medium">
+            className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 disabled:opacity-30 hover:text-neutral-800 dark:text-neutral-200 transition-colors font-medium">
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> السابق
           </button>
-          <span className="text-[12px] sm:text-xs text-neutral-500 font-medium">صفحة {tablePage} من {pages}</span>
+          <span className="text-[12px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-medium">صفحة {tablePage} من {pages}</span>
           <button onClick={() => setTablePage(p => Math.min(pages, p + 1))} disabled={tablePage === pages}
-            className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 disabled:opacity-30 hover:text-neutral-800 transition-colors font-medium">
+            className="flex items-center gap-1 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 disabled:opacity-30 hover:text-neutral-800 dark:text-neutral-200 transition-colors font-medium">
             التالي <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
@@ -1048,9 +1077,9 @@ function DrillTable({
       {filterMenuCol && filterAnchorRect && createPortal(
         <>
           <div className="fixed inset-0 z-[99]" onClick={() => { setFilterMenuCol(null); setFilterAnchorRect(null); }} />
-          <div className="fixed z-[100] bg-white border border-neutral-200 rounded-xl shadow-2xl p-3 w-52"
+          <div className="fixed z-[100] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-xl shadow-2xl p-3 w-52"
             style={{ top: filterAnchorRect.bottom + 6, right: window.innerWidth - filterAnchorRect.right }}>
-            <p className="text-[11px] font-bold text-neutral-500 mb-2 pb-1.5 border-b border-neutral-100">
+            <p className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-2 pb-1.5 border-b border-neutral-100 dark:border-neutral-700">
               {NUMERIC_KEYS.has(filterMenuCol) ? "تصفية الأرقام" : "بحث في العمود"}
             </p>
             {NUMERIC_KEYS.has(filterMenuCol) ? (
@@ -1058,21 +1087,21 @@ function DrillTable({
                 <div>
                   <label className="text-[12px] text-neutral-400 block mb-0.5">أكبر من أو يساوي</label>
                   <input type="number" dir="ltr" placeholder="0"
-                    className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
                     value={(colFilters[filterMenuCol] as any)?.min ?? ""}
                     onChange={e => updateNumFilter(filterMenuCol, "min", e.target.value)} />
                 </div>
                 <div>
                   <label className="text-[12px] text-neutral-400 block mb-0.5">أصغر من أو يساوي</label>
                   <input type="number" dir="ltr" placeholder="∞"
-                    className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                    className="w-full border border-neutral-200 dark:border-neutral-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
                     value={(colFilters[filterMenuCol] as any)?.max ?? ""}
                     onChange={e => updateNumFilter(filterMenuCol, "max", e.target.value)} />
                 </div>
               </div>
             ) : (
               <input type="text" placeholder="ابحث..." autoFocus
-                className="w-full border border-neutral-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
+                className="w-full border border-neutral-200 dark:border-neutral-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-neutral-400"
                 value={(colFilters[filterMenuCol] as any)?.value ?? ""}
                 onChange={e => updateTextFilter(filterMenuCol, e.target.value)} />
             )}
@@ -1118,8 +1147,8 @@ function TeamSummary({ data }: { data: { label: string; value: number; pct: numb
         {buckets.map((b, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
-            <span className="text-[12px] font-semibold text-neutral-600 w-10 shrink-0">{b.label}</span>
-            <div className="flex-1 bg-neutral-100 rounded-full h-1.5 overflow-hidden">
+            <span className="text-[12px] font-semibold text-neutral-600 dark:text-neutral-400 w-10 shrink-0">{b.label}</span>
+            <div className="flex-1 bg-neutral-100 dark:bg-neutral-700 rounded-full h-1.5 overflow-hidden">
               <div className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${(b.count / total) * 100}%`, backgroundColor: b.color }} />
             </div>
@@ -1135,12 +1164,12 @@ function TeamSummary({ data }: { data: { label: string; value: number; pct: numb
 
       {/* Top performers */}
       {top3.length > 0 && (
-        <div className="border-t border-neutral-100 pt-2.5 space-y-1.5">
+        <div className="border-t border-neutral-100 dark:border-neutral-700 pt-2.5 space-y-1.5">
           <p className="text-[12px] font-semibold text-neutral-400 mb-1">الأعلى أداءً</p>
           {top3.map((d, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-[12px] font-bold text-neutral-300 w-3 shrink-0">{i + 1}</span>
-              <span className="text-[11px] text-neutral-700 truncate flex-1">
+              <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate flex-1">
                 {d.label.split(" ").slice(0, 2).join(" ")}
               </span>
               <span className="text-[11px] font-bold tabular-nums" style={{ color: pctColor(d.pct) }}>{d.pct}%</span>
@@ -1235,7 +1264,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
   const containerRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
 
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -1259,9 +1288,16 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
   function openDropdown() {
     if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const panelW = Math.min(520, vw - 32);
+      const center = rect.left + rect.width / 2;
+      let left = center - panelW / 2;
+      if (left < 16) left = 16;
+      if (left + panelW > vw - 16) left = vw - panelW - 16;
       setDropdownPos({
         top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
+        left,
+        width: panelW,
       });
     }
     setOpen(v => !v);
@@ -1306,14 +1342,14 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
         {/* Month header */}
         <div className="flex items-center justify-between px-2 sm:px-3 pb-2 sm:pb-3">
           {isLeft ? (
-            <button onClick={nextMonth} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors">
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-500" />
+            <button onClick={nextMonth} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-500 dark:text-neutral-400" />
             </button>
           ) : <div className="w-6 sm:w-7" />}
-          <span className="text-xs sm:text-sm font-bold text-neutral-800">{MONTHS_AR[month]} {year}</span>
+          <span className="text-xs sm:text-sm font-bold text-neutral-800 dark:text-neutral-200">{MONTHS_AR[month]} {year}</span>
           {!isLeft ? (
-            <button onClick={prevMonth} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors">
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-500" />
+            <button onClick={prevMonth} className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-500 dark:text-neutral-400" />
             </button>
           ) : <div className="w-6 sm:w-7" />}
         </div>
@@ -1323,7 +1359,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
           {DAYS_FULL_AR.map((d, i) => (
             <div key={i} className={cn(
               "text-center text-[9px] sm:text-[12px] font-semibold py-0.5 sm:py-1",
-              i === 5 ? "text-[#2563EB]" : i === 6 ? "text-[#2563EB]" : "text-neutral-500"
+              i === 5 ? "text-[#2563EB]" : i === 6 ? "text-[#2563EB]" : "text-neutral-500 dark:text-neutral-400"
             )}>
               {d.slice(0, d === "الاثنين" || d === "الثلاثاء" || d === "الأربعاء" || d === "الخميس" ? 6 : 4)}
             </div>
@@ -1357,9 +1393,9 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
                 <span className={cn(
                   "w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-[11px] sm:text-[13px] font-medium transition-colors z-10 relative",
                   (isFrom || isTo) ? "bg-[#2563EB] text-white font-bold" : "",
-                  !isFrom && !isTo && inRange ? "text-neutral-700" : "",
+                  !isFrom && !isTo && inRange ? "text-neutral-700 dark:text-neutral-300" : "",
                   !isFrom && !isTo && !inRange && isFriSat ? "text-[#2563EB]" : "",
-                  !isFrom && !isTo && !inRange && !isFriSat ? "text-neutral-700" : ""
+                  !isFrom && !isTo && !inRange && !isFriSat ? "text-neutral-700 dark:text-neutral-300" : ""
                 )}>
                   {d}
                 </span>
@@ -1383,24 +1419,23 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.15 }}
           ref={panelRef}
-          className="dropdown-menu bg-white rounded-2xl border border-neutral-200 shadow-xl p-3 sm:p-4"
+          className="dropdown-menu bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-600 shadow-xl p-3 sm:p-4"
           style={{
             position: "fixed",
             top: dropdownPos.top,
-            right: dropdownPos.right,
-            minWidth: "min(520px, calc(100vw - 2rem))",
-            maxWidth: "calc(100vw - 2rem)",
+            left: dropdownPos.left,
+            width: dropdownPos.width,
             zIndex: 9999,
           }}
           dir="rtl"
         >
           {/* Header showing selected range */}
-          <div className="flex items-center gap-2 sm:gap-3 border-b border-neutral-100 pb-2 sm:pb-3 mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3 border-b border-neutral-100 dark:border-neutral-700 pb-2 sm:pb-3 mb-3 sm:mb-4">
             <button
               onClick={() => setSelecting("from")}
               className={cn(
                 "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[12px] sm:text-[12px] font-bold border-2 transition-colors",
-                selecting === "from" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 text-neutral-600"
+                selecting === "from" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400"
               )}
             >
               {displayFrom}
@@ -1410,7 +1445,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
               onClick={() => setSelecting("to")}
               className={cn(
                 "flex-1 text-center py-1 sm:py-1.5 px-2 sm:px-3 rounded-xl text-[12px] sm:text-[12px] font-bold border-2 transition-colors",
-                selecting === "to" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 text-neutral-600"
+                selecting === "to" ? "border-[#2563EB] text-[#2563EB] bg-blue-50" : "border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400"
               )}
             >
               {displayTo}
@@ -1420,7 +1455,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
           {/* Dual month calendars — RTL: right=earlier, left=later */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-x-reverse divide-neutral-100">
             {renderMonth(calYear, calMonth, true)}
-            <div className="hidden sm:block w-px bg-neutral-100 self-stretch mx-1" />
+            <div className="hidden sm:block w-px bg-neutral-100 dark:bg-neutral-700 self-stretch mx-1" />
             {renderMonth(rightYear, rightMonth, false)}
           </div>
         </motion.div>
@@ -1440,7 +1475,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
             "px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] font-semibold transition-all whitespace-nowrap",
             open || active
               ? "bg-neutral-800 text-white shadow-sm"
-              : "text-neutral-500 hover:text-neutral-700"
+              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
           )}
         >
           محدد
@@ -1449,14 +1484,14 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
         <button
           ref={btnRef}
           onClick={openDropdown}
-          className="flex items-center gap-1.5 sm:gap-2 border border-neutral-200 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 bg-white hover:bg-neutral-50 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 sm:gap-2 border border-neutral-200 dark:border-neutral-600 rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
         >
           <Calendar className="w-3 h-3.5 sm:w-3.5 sm:h-3.5 text-neutral-400 shrink-0" />
-          <span className="text-[12px] sm:text-[12px] font-semibold text-neutral-700 whitespace-nowrap">
+          <span className="text-[12px] sm:text-[12px] font-semibold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
             {displayFrom}
           </span>
           <span className="text-[9px] sm:text-[12px] text-neutral-400 mx-0.5 sm:mx-1">—</span>
-          <span className={cn("text-[12px] sm:text-[12px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700")}>
+          <span className={cn("text-[12px] sm:text-[12px] font-semibold whitespace-nowrap", selecting === "to" && open ? "text-[#2563EB]" : "text-neutral-700 dark:text-neutral-300")}>
             {displayTo}
           </span>
         </button>
@@ -1520,8 +1555,8 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
       <button
         onClick={() => setOpen(v => !v)}
         className={cn(
-          "flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[12px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white focus:outline-none cursor-pointer font-medium transition-colors whitespace-nowrap",
-          hasSelection ? "border-[#B21063] text-[#B21063]" : "border-neutral-200 text-neutral-700"
+          "flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[12px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white dark:bg-neutral-800 focus:outline-none cursor-pointer font-medium transition-colors whitespace-nowrap",
+          hasSelection ? "border-[#B21063] text-[#B21063]" : "border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
         )}
       >
         <span className="max-w-[80px] sm:max-w-[110px] truncate">{label}</span>
@@ -1539,22 +1574,22 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
             width: "min(220px, calc(100vw - 2rem))",
             maxWidth: "calc(100vw - 2rem)",
           }}
-          className="dropdown-menu bg-white border border-neutral-200 rounded-2xl shadow-xl overflow-hidden"
+          className="dropdown-menu bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-2xl shadow-xl overflow-hidden"
           dir="rtl"
         >
-          <div className="p-2 border-b border-neutral-100">
+          <div className="p-2 border-b border-neutral-100 dark:border-neutral-700">
             <input
               autoFocus
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="بحث..."
-              className="w-full text-[12px] sm:text-[12px] border border-neutral-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
+              className="w-full text-[12px] sm:text-[12px] border border-neutral-200 dark:border-neutral-600 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
             />
           </div>
-          <div className="p-1 border-b border-neutral-100">
+          <div className="p-1 border-b border-neutral-100 dark:border-neutral-700">
             <button
               onClick={toggleAll}
-              className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[12px] sm:text-[12px] font-semibold hover:bg-neutral-50 transition-colors text-neutral-600"
+              className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[12px] sm:text-[12px] font-semibold hover:bg-neutral-50 dark:bg-neutral-700 transition-colors text-neutral-600 dark:text-neutral-400"
             >
               <span className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
                 selected.size === options.length ? "bg-[#B21063] border-[#B21063]" : "border-neutral-300"
@@ -1570,19 +1605,19 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
               <button
                 key={opt.id}
                 onClick={() => toggle(opt.id)}
-                className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[12px] sm:text-[12px] hover:bg-neutral-50 transition-colors text-right"
+                className="w-full flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 text-[12px] sm:text-[12px] hover:bg-neutral-50 dark:bg-neutral-700 transition-colors text-right"
               >
                 <span className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
                   selected.has(opt.id) ? "bg-[#B21063] border-[#B21063]" : "border-neutral-300"
                 )}>
                   {selected.has(opt.id) && <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-white" />}
                 </span>
-                <span className="truncate text-neutral-700 font-medium">{opt.name}</span>
+                <span className="truncate text-neutral-700 dark:text-neutral-300 font-medium">{opt.name}</span>
               </button>
             ))}
           </div>
           {hasSelection && (
-            <div className="p-2 border-t border-neutral-100">
+            <div className="p-2 border-t border-neutral-100 dark:border-neutral-700">
               <button onClick={() => { onChange(new Set()); setOpen(false); }}
                 className="w-full text-[12px] sm:text-[12px] text-neutral-400 hover:text-red-500 transition-colors font-medium">
                 مسح التحديد
@@ -1628,6 +1663,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
   const [selectedSupervisors, setSelectedSupervisors] = useState<Set<string>>(new Set());
   const [selectedShowrooms, setSelectedShowrooms] = useState<Set<string>>(new Set());
   const [selectedSellers, setSelectedSellers] = useState<Set<string>>(new Set());
+  const [tableSearch, setTableSearch] = useState("");
 
   // Mobile table view mode
   const [mobileTableMode, setMobileTableMode] = useState<"default" | "pinned" | "cards" | "single">("default");
@@ -1892,28 +1928,28 @@ export default function SalesPerformancePage({ onBack }: Props) {
             exit="hide"
             className="overflow-hidden"
           >
-          <div className="px-2 sm:px-4 py-2 border-b border-neutral-100 dark:border-neutral-700">
-            <div className="flex items-center gap-1 bg-neutral-[0] dark:bg-neutral-800 rounded-full p-1 min-w-0">
+          <div className="px-1 sm:px-4 py-2 border-b border-neutral-100 dark:border-neutral-700">
+            <div className="flex items-center gap-1 bg-neutral-[0] dark:bg-neutral-800 rounded-full p-1 w-full min-w-0 sm:max-w-[50%] sm:mx-auto">
             {([
               ["team","الفريق", Users],
               ["areas","المناطق", MapPin],
-              ["supervisors","المشرفين", ShieldCheck],
-              ["showrooms","المعارض", Building2],
-              ["sellers","البائعين", User]
-            ] as [FilterType, string, React.ElementType][]).map(([type, label, Icon]) => (
+              ["supervisors","المشرفين", Shield],
+              ["showrooms","المعارض", Store],
+              ["sellers","البائعين", UserCircle]
+            ] as [FilterType, string, React.FC<React.SVGProps<SVGSVGElement> & { className?: string }>][]).map(([type, label, Icon]) => (
               <motion.button
                 key={type}
                 onClick={() => { setFilterType(type); resetTableFilters(); }}
                 layout
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{ type: "spring", stiffness: 100, damping: 30 }}
                 className={cn(
-                  "flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0",
+                  "flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-1.5 px-1 rounded-full text-[14px] font-bold transition-all duration-200 min-w-0",
                   filterType === type
                     ? "bg-neutral-900 text-white shadow-sm"
-                    : "bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900"
+                    : "bg-neutral-50 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 hover:text-neutral-900 dark:hover:text-white"
                 )}
               >
-                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <Icon className="hidden sm:block w-4 h-4" />
                 <span className="truncate">{label}</span>
               </motion.button>
             ))}
@@ -1957,8 +1993,8 @@ export default function SalesPerformancePage({ onBack }: Props) {
                   {/* Clear button */}
                   {hasActiveTableFilter && (
                     <button
-                      onClick={resetTableFilters}
-                      className="shrink-0 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full hover:bg-neutral-100 transition-colors ml-1 text-neutral-400 hover:text-neutral-700"
+                      onClick={() => { resetTableFilters(); setTableSearch(""); }}
+                      className="shrink-0 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ml-1 text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
                       title="مسح الفلاتر"
                     >
                       <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -2012,13 +2048,21 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     onChange={setSelectedSellers}
                     placeholder="جميع البائعين"
                   />
+                  <div className="relative shrink-0 w-[135px] sm:w-[180px]">
+                    <input
+                      value={tableSearch}
+                      onChange={e => setTableSearch(e.target.value)}
+                      placeholder="بحث في النتائج"
+                      className="w-full rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-[12px] sm:text-[12px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
+                    />
+                  </div>
                 </div>
               ) : (
                 /* ── Analytics view: simple title + single filter ── */
                 <>
-                  <div className="flex items-center gap-3 sm:gap-4 w-full overflow-x-auto">
+                  <div className="flex items-center justify-center sm:justify-center gap-3 sm:gap-4 w-full overflow-x-auto">
                     <div className="flex items-center gap-4 shrink-0">
-                      <span className="text-xs sm:text-sm font-bold text-neutral-700">مؤشر أداء</span>
+                      <span className="text-xs sm:text-sm font-bold text-neutral-700 dark:text-neutral-300">مؤشر أداء</span>
                       <span className="text-[12px] sm:text-[12px] text-neutral-400">
                         {period === "day"
                           ? `${selectedDay} ${MONTHS_AR[month]} ${toArabicDigits(String(year))}`
@@ -2026,35 +2070,59 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           ? `${MONTHS_AR[month]} ${toArabicDigits(String(year))}`
                           : toArabicDigits(String(year))}
                       </span>
+                      {filterType === "team" && (
+                        <MultiSelectDropdown options={REGIONS} selected={selectedRegions} onChange={setSelectedRegions} placeholder="جميع الأقاليم" />
+                      )}
+                      {filterType === "areas" && (
+                        <MultiSelectDropdown options={AREAS} selected={selectedAreas} onChange={setSelectedAreas} placeholder="جميع المناطق" />
+                      )}
+                      {filterType === "supervisors" && (
+                        <MultiSelectDropdown options={SUPERVISORS} selected={selectedSupervisors} onChange={setSelectedSupervisors} placeholder="جميع المشرفين" />
+                      )}
+                      {filterType === "showrooms" && (
+                        <MultiSelectDropdown options={SHOWROOMS} selected={selectedShowrooms} onChange={setSelectedShowrooms} placeholder="جميع المعارض" />
+                      )}
+                      {filterType === "sellers" && (
+                        <MultiSelectDropdown options={SELLERS} selected={selectedSellers} onChange={setSelectedSellers} placeholder="جميع البائعين" />
+                      )}
                     </div>
-                    {filterType === "team" && (
-                      <MultiSelectDropdown options={REGIONS} selected={selectedRegions} onChange={setSelectedRegions} placeholder="جميع الأقاليم" />
-                    )}
-                    {filterType === "areas" && (
-                      <MultiSelectDropdown options={AREAS} selected={selectedAreas} onChange={setSelectedAreas} placeholder="جميع المناطق" />
-                    )}
-                    {filterType === "supervisors" && (
-                      <MultiSelectDropdown options={SUPERVISORS} selected={selectedSupervisors} onChange={setSelectedSupervisors} placeholder="جميع المشرفين" />
-                    )}
-                    {filterType === "showrooms" && (
-                      <MultiSelectDropdown options={SHOWROOMS} selected={selectedShowrooms} onChange={setSelectedShowrooms} placeholder="جميع المعارض" />
-                    )}
-                    {filterType === "sellers" && (
-                      <MultiSelectDropdown options={SELLERS} selected={selectedSellers} onChange={setSelectedSellers} placeholder="جميع البائعين" />
-                    )}
+                    <div className="hidden sm:block flex-1 min-w-[1px]" />
+                    <div className="hidden sm:flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-lg p-0.5 border border-neutral-200 dark:border-neutral-600">
+                        {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
+                          <button key={p} onClick={() => setPeriod(p as Period)}
+                            className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[12px] font-semibold transition-all whitespace-nowrap",
+                              period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
+                            {l}
+                          </button>
+                        ))}
+                        <DateRangePicker iconOnly active={customRangeActive} dateFrom={dateFrom} dateTo={dateTo}
+                          onFromChange={v => { setDateFrom(v); setCustomRangeActive(true); }}
+                          onToChange={v => { setDateTo(v); setCustomRangeActive(true); }} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                          <ChevronRight className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                        </button>
+                        <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
+                        <button onClick={nextMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                          <ChevronLeft className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
               <div className="mr-auto flex items-center gap-1 sm:gap-1.5 shrink-0">
                 {/* View mode tabs */}
-                <div className="flex items-center gap-0.5 bg-neutral-100 rounded-xl p-0.5">
+                <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-700 rounded-xl p-0.5">
                   {([
                     ["analytics", "ملخص", BarChart2],
                     ["table", "تفصيلي", Table]
                   ] as const).map(([mode, label, IconComponent]) => (
                     <button key={mode} onClick={() => setViewMode(mode)}
                       className={cn("px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-[10px] font-semibold transition-all flex items-center gap-1",
-                        viewMode === mode ? "bg-neutral-800 text-white shadow-sm" : "text-neutral-500 hover:text-neutral-700")}
+                        viewMode === mode ? "bg-neutral-800 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300")}
                       title={label}>
                       <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
@@ -2070,16 +2138,16 @@ export default function SalesPerformancePage({ onBack }: Props) {
       </div>
 
       {/* ── Scrollable Content ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-16 sm:pb-20">
-        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-4 pt-0 sm:pt-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-8 sm:pb-10">
+        <div className="max-w-[1400px] mx-auto px-1 sm:px-2 space-y-3 pt-1 sm:pt-2">
           {/* ── Calendar / Period Navigator ── */}
-          <div className="border-b border-neutral-100 dark:border-neutral-700 px-1 py-2.5 -mx-1 mb-5 mt-[10px]">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="border-b border-neutral-100 dark:border-neutral-700 px-1 py-2 -mx-1 mb-3 mt-1">
+            <div className="flex items-center gap-2 mb-2 sm:hidden">
               <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-lg p-0.5 border border-neutral-200 dark:border-neutral-600 ">
                 {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
                   <button key={p} onClick={() => setPeriod(p as Period)}
-                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] sm:text-[12px] font-semibold transition-all whitespace-nowrap",
-                      period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200")}>
+                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[12px] font-semibold transition-all whitespace-nowrap",
+                      period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
                     {l}
                   </button>
                 ))}
@@ -2162,7 +2230,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                         className={cn(
                           "flex flex-col items-center gap-0.5 rounded-xl py-2 transition-all shrink-0 active:scale-95",
                           "sm:min-w-[42px] min-w-[calc((100vw-2rem-1rem)/7)]",
-                          isSelected ? "bg-neutral-900 text-white shadow-sm" : isToday ? "bg-blue-50 border border-blue-200" : "bg-neutral-50 hover:bg-neutral-100"
+                          isSelected ? "bg-neutral-900 text-white shadow-sm" : isToday ? "bg-blue-50 border border-blue-200" : "bg-neutral-50 dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                         )}
                         style={{
                           backgroundColor: isSelected ? "#111111" : "#ffffff",
@@ -2193,7 +2261,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
 
         {/* Breadcrumb drill-down trail */}
         {drillPath.length > 0 && (
-          <div className="flex items-center gap-1 flex-wrap mb-2 bg-neutral-50 rounded-xl px-3 py-2 border border-neutral-100">
+          <div className="flex items-center gap-1 flex-wrap mb-2 bg-neutral-50 dark:bg-neutral-700 rounded-xl px-3 py-2 border border-neutral-100 dark:border-neutral-700">
             <button onClick={() => setDrillPath([])}
               className="text-[11px] font-semibold text-[#B21063] hover:underline shrink-0 transition-colors">
               الفريق
@@ -2207,12 +2275,12 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     {crumb.name}
                   </button>
                 ) : (
-                  <span className="text-[11px] font-bold text-neutral-700 shrink-0 truncate max-w-[140px]">{crumb.name}</span>
+                  <span className="text-[11px] font-bold text-neutral-700 dark:text-neutral-300 shrink-0 truncate max-w-[140px]">{crumb.name}</span>
                 )}
               </React.Fragment>
             ))}
             <button onClick={() => setDrillPath([])}
-              className="mr-auto text-[12px] text-neutral-400 hover:text-neutral-600 px-2 py-0.5 rounded-lg hover:bg-neutral-200 transition-colors">
+              className="mr-auto text-[12px] text-neutral-400 hover:text-neutral-600 dark:text-neutral-400 px-2 py-0.5 rounded-lg hover:bg-neutral-200 transition-colors">
               إعادة ضبط
             </button>
           </div>
@@ -2238,9 +2306,9 @@ export default function SalesPerformancePage({ onBack }: Props) {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
                 {/* Team/Showrooms/Sellers bar chart */}
-                <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold text-neutral-800">
+                    <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
                       {{ team: "أداء الفريق", areas: "أداء المناطق", supervisors: "أداء المشرفين", showrooms: "أداء المعارض", sellers: "أداء البائعين" }[filterType]}
                     </h3>
                     <span className={cn("text-xs font-bold px-2.5 py-0.5 rounded-full", pctBg(achievementPct))}>
@@ -2251,10 +2319,10 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 </div>
 
                 {/* Category bar chart */}
-                <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold text-neutral-800">تحقيق الفئات</h3>
-                    <span className="text-xs bg-neutral-100 text-neutral-600 px-2.5 py-0.5 rounded-full font-medium">توزيع المبيعات</span>
+                    <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">تحقيق الفئات</h3>
+                    <span className="text-xs bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 px-2.5 py-0.5 rounded-full font-medium">توزيع المبيعات</span>
                   </div>
                   {(() => {
                     const maxPct = Math.max(...CATEGORIES.map(c => c.pct), 1);
@@ -2270,7 +2338,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                                 <div className="rounded-t-lg transition-all duration-500 w-full max-w-[32px]"
                                   style={{ height: barH, backgroundColor: cat.color }} />
                               </div>
-                              <span className="text-[12px] text-neutral-500 text-center leading-tight font-medium">{cat.name}</span>
+                              <span className="text-[12px] text-neutral-500 dark:text-neutral-400 text-center leading-tight font-medium">{cat.name}</span>
                             </div>
                           );
                         })}
@@ -2281,16 +2349,16 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     {CATEGORIES.map((cat, i) => (
                       <div key={i} className="flex items-center gap-1">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                        <span className="text-[11px] text-neutral-500 font-medium">{cat.name}</span>
+                        <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">{cat.name}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Sales trend chart */}
-                <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm p-4">
                   <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <h3 className="text-sm font-bold text-neutral-800">
+                    <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
                       {period === "day" ? `مبيعات يوم ${selectedDay} ${MONTHS_AR[month]}` :
                        period === "year" ? `مبيعات سنة ${year}` :
                        `مبيعات ${MONTHS_AR[month]} ${year}`}
@@ -2298,11 +2366,11 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     <div className="flex items-center gap-3 text-xs">
                       <span className="flex items-center gap-1.5">
                         <span className="w-3 h-0.5 rounded bg-emerald-400 inline-block" />
-                        <span className="text-neutral-500 font-medium">حالي</span>
+                        <span className="text-neutral-500 dark:text-neutral-400 font-medium">حالي</span>
                       </span>
                       <span className="flex items-center gap-1.5">
                         <span className="w-3 h-0.5 rounded bg-amber-400 inline-block" style={{ borderBottom: "2px dashed" }} />
-                        <span className="text-neutral-500 font-medium">سابق</span>
+                        <span className="text-neutral-500 dark:text-neutral-400 font-medium">سابق</span>
                       </span>
                     </div>
                   </div>
@@ -2329,9 +2397,9 @@ export default function SalesPerformancePage({ onBack }: Props) {
               </div>
 
               {/* Target achievement — filter + drill aware mini cards */}
-              <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+              <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-neutral-800">
+                  <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
                     {(() => {
                       if (drillPath.length > 0) {
                         if (currentDrillLevel === "areas") return "أداء المناطق";
@@ -2366,22 +2434,22 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       return noChevron ? (
                         <div key={id} className="flex items-center gap-3 px-2 py-1.5">
                           <div className="w-20 sm:w-32 shrink-0">
-                            <span className="text-xs font-semibold text-neutral-700 truncate block">{name}</span>
+                            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 truncate block">{name}</span>
                             <span className="text-[11px] text-neutral-400 font-medium">{formatNum(sales)}</span>
                           </div>
-                          <div className="flex-1 h-2 rounded-full bg-neutral-100 overflow-hidden">
+                          <div className="flex-1 h-2 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
                             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: pctColor(pct) }} />
                           </div>
                           <span className={cn("text-xs font-bold px-2 py-0.5 rounded-lg shrink-0 w-14 text-center", pctBg(pct))}>{pct}%</span>
                         </div>
                       ) : (
                         <button key={id} onClick={onDrill}
-                          className="flex items-center gap-3 w-full text-right hover:bg-neutral-50 rounded-xl px-2 py-1.5 transition-colors group">
+                          className="flex items-center gap-3 w-full text-right hover:bg-neutral-50 dark:bg-neutral-700 rounded-xl px-2 py-1.5 transition-colors group">
                           <div className="w-20 sm:w-32 shrink-0">
-                            <span className="text-xs font-semibold text-neutral-700 truncate block group-hover:text-[#B21063] transition-colors">{name}</span>
+                            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 truncate block group-hover:text-[#B21063] transition-colors">{name}</span>
                             <span className="text-[11px] text-neutral-400 font-medium">{formatNum(sales)}</span>
                           </div>
-                          <div className="flex-1 h-2 rounded-full bg-neutral-100 overflow-hidden">
+                          <div className="flex-1 h-2 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
                             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: pctColor(pct) }} />
                           </div>
                           <span className={cn("text-xs font-bold px-2 py-0.5 rounded-lg shrink-0 w-14 text-center", pctBg(pct))}>{pct}%</span>
@@ -2479,33 +2547,33 @@ export default function SalesPerformancePage({ onBack }: Props) {
                   return { day: d, dayName, sales: daySales, prevSales: prevDaySales, target: dayTarget, pct };
                 });
                 return (
-                  <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
-                      <h3 className="text-sm font-bold text-neutral-800">
+                  <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+                      <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">
                         تقرير الأيام — {drillPath[drillPath.length - 1].name}
                       </h3>
-                      <span className="text-xs text-neutral-500 font-medium">{MONTHS_AR[month]} {year}</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{MONTHS_AR[month]} {year}</span>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-[11px] sm:text-[13px]" style={{ minWidth: 520 }}>
                         <thead>
-                          <tr className="bg-neutral-50 border-b border-neutral-100">
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">اليوم</th>
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">التاريخ</th>
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">المبيعات</th>
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">الهدف</th>
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">السابق</th>
-                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 whitespace-nowrap text-xs sm:text-sm">التحقيق</th>
+                          <tr className="bg-neutral-50 dark:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700">
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">اليوم</th>
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">التاريخ</th>
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">المبيعات</th>
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">الهدف</th>
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">السابق</th>
+                            <th className="px-2 sm:px-3 py-2 sm:py-3 text-right font-bold text-neutral-600 dark:text-neutral-400 whitespace-nowrap text-xs sm:text-sm">التحقيق</th>
                           </tr>
                         </thead>
                         <tbody>
                           {dayRows.map((row, idx) => (
-                            <tr key={row.day} className={cn("border-b border-neutral-50 transition-colors", idx % 2 === 0 ? "bg-white" : "bg-neutral-50/30")}>
-                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 font-medium text-neutral-700 whitespace-nowrap text-xs sm:text-sm">{row.dayName}</td>
-                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 tabular-nums whitespace-nowrap text-xs sm:text-sm">{row.day}/{month + 1}/{year}</td>
-                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-700 font-semibold tabular-nums text-xs sm:text-sm">{formatFull(Math.round(row.sales))}</td>
-                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 tabular-nums text-xs sm:text-sm">{formatFull(row.target)}</td>
-                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(row.prevSales))}</td>
+                            <tr key={row.day} className={cn("border-b border-neutral-50 transition-colors", idx % 2 === 0 ? "bg-white dark:bg-neutral-800" : "bg-neutral-50 dark:bg-neutral-700/30")}>
+                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap text-xs sm:text-sm">{row.dayName}</td>
+                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 dark:text-neutral-400 tabular-nums whitespace-nowrap text-xs sm:text-sm">{row.day}/{month + 1}/{year}</td>
+                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-700 dark:text-neutral-300 font-semibold tabular-nums text-xs sm:text-sm">{formatFull(Math.round(row.sales))}</td>
+                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 dark:text-neutral-400 tabular-nums text-xs sm:text-sm">{formatFull(row.target)}</td>
+                              <td className="px-2 sm:px-3 py-2 sm:py-2.5 text-neutral-500 dark:text-neutral-400 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(row.prevSales))}</td>
                               <td className="px-2 sm:px-3 py-2 sm:py-2">
                                 <span className={cn("text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(row.pct))}>{row.pct}%</span>
                               </td>
@@ -2513,11 +2581,11 @@ export default function SalesPerformancePage({ onBack }: Props) {
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-neutral-50 border-t-2 border-neutral-200 font-bold">
-                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-800 text-xs sm:text-sm" colSpan={2}>الإجمالي</td>
-                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-800 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(dayRows.reduce((s, r) => s + r.sales, 0)))}</td>
-                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 tabular-nums text-xs sm:text-sm">{formatFull(dayRows.reduce((s, r) => s + r.target, 0))}</td>
-                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(dayRows.reduce((s, r) => s + r.prevSales, 0)))}</td>
+                          <tr className="bg-neutral-50 dark:bg-neutral-700 border-t-2 border-neutral-200 dark:border-neutral-600 font-bold">
+                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-800 dark:text-neutral-200 text-xs sm:text-sm" colSpan={2}>الإجمالي</td>
+                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-800 dark:text-neutral-200 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(dayRows.reduce((s, r) => s + r.sales, 0)))}</td>
+                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 dark:text-neutral-300 tabular-nums text-xs sm:text-sm">{formatFull(dayRows.reduce((s, r) => s + r.target, 0))}</td>
+                            <td className="px-2 sm:px-3 py-2 sm:py-3 text-neutral-700 dark:text-neutral-300 tabular-nums text-xs sm:text-sm">{formatFull(Math.round(dayRows.reduce((s, r) => s + r.prevSales, 0)))}</td>
                             <td className="px-2 sm:px-3 py-2 sm:py-2.5">
                               <span className={cn("text-[12px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-lg", pctBg(achievementPct))}>{achievementPct}%</span>
                             </td>
@@ -2573,6 +2641,8 @@ export default function SalesPerformancePage({ onBack }: Props) {
                   achievementPct, sortKey, sortDir, toggleSort,
                   tablePage, setTablePage, totalPages,
                   mobileTableMode, setMobileTableMode,
+                  searchQuery: tableSearch,
+                  onClearSearch: () => setTableSearch(""),
                 };
 
                 // Drill path takes priority

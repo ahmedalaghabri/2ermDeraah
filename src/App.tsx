@@ -40,7 +40,7 @@ function PageShell({ title, children }) {
       <div className="flex items-center gap-2 text-sm text-neutral-600">
         <span className="font-medium">{title}</span>
       </div>
-      <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 shadow-sm">
+      <div className="rounded-2xl border border-neutral-200 bg-white dark:bg-neutral-800 p-4 sm:p-6 shadow-sm">
         {children}
       </div>
     </div>
@@ -150,7 +150,7 @@ function ImageSlider() {
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`w-3 h-3 rounded-full transition-all ${
-              currentSlide === index ? 'bg-white' : 'bg-white/50'
+              currentSlide === index ? 'bg-white dark:bg-neutral-800' : 'bg-white dark:bg-neutral-800/50'
             }`}
           />
         ))}
@@ -245,7 +245,7 @@ function ExternalLinksSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group block p-4 rounded-xl bg-white border border-neutral-200 hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="group block p-4 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 hover:shadow-lg transition-all duration-200 hover:scale-105"
           >
             <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${link.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
               <link.icon className="w-6 h-6 text-white" />
@@ -395,7 +395,7 @@ function TransactionSelectionPage({ onCancel, onTransactionSelect }) {
   });
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[radial-gradient(40%_40%_at_100%_0%,#eef2ff_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,#fff1f2_0%,transparent_60%)]">
+    <div dir="rtl" className="min-h-screen bg-[radial-gradient(40%_40%_at_100%_0%,#eef2ff_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,#fff1f2_0%,transparent_60%)] dark:bg-[radial-gradient(40%_40%_at_100%_0%,#1a1a2e_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,#1a1a2e_0%,transparent_60%)]">
       <div className="mx-auto max-w-[1400px] p-3 sm:p-6 space-y-4 sm:space-y-6">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <div className="rounded-2xl border border-sky-100 bg-gradient-to-b from-sky-50/70 to-white shadow-sm p-4 sm:p-6">
@@ -413,13 +413,13 @@ function TransactionSelectionPage({ onCancel, onTransactionSelect }) {
                   placeholder="ابحث عن نوع المعاملة..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-2xl ps-10 pe-4 py-2.5 sm:py-3 bg-white border border-neutral-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm transition-shadow"
+                  className="w-full rounded-2xl ps-10 pe-4 py-2.5 sm:py-3 bg-white dark:bg-neutral-800 border border-neutral-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm transition-shadow"
                 />
               </div>
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="rounded-2xl px-4 py-2.5 sm:py-3 bg-white border border-neutral-200 focus:ring-2 focus:ring-blue-500 outline-none w-full sm:min-w-[200px] text-sm shadow-sm transition-shadow"
+                className="rounded-2xl px-4 py-2.5 sm:py-3 bg-white dark:bg-neutral-800 border border-neutral-200 focus:ring-2 focus:ring-blue-500 outline-none w-full sm:min-w-[200px] text-sm shadow-sm transition-shadow"
               >
                 {departments.map(dept => (
                   <option key={dept} value={dept}>{dept}</option>
@@ -553,7 +553,7 @@ function AddTransactionForm({ onCancel, onSaved }) {
         <span className="font-medium">إضافة معاملة</span>
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 shadow-sm">
+      <div className="rounded-2xl border border-neutral-200 bg-white dark:bg-neutral-800 p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-bold">إضافة معاملة</h2>
@@ -704,7 +704,7 @@ function AddTransactionForm({ onCancel, onSaved }) {
               {!!attachments.length && (
                 <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {attachments.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm bg-white">
+                    <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm bg-white dark:bg-neutral-800">
                       <div className="truncate">{a.name}</div>
                       <button onClick={() => removeAttachment(a.id)} className="p-1 rounded-md hover:bg-blue-50 active:bg-blue-100"><X className="h-4 w-4" /></button>
                     </div>
@@ -941,7 +941,7 @@ export default function ResponsiveDashboard() {
     dark ? "dark bg-neutral-950 text-neutral-100" : "text-neutral-900"
   ), [dark]);
 
-  const backgroundStyle = dark ? {} : { backgroundColor: '#EEF1F8' };
+  const backgroundStyle = dark ? { backgroundColor: '#0a0a0a' } : { backgroundColor: '#EEF1F8' };
 
   // عناوين الصفحات
   const titlesMap = (() => {
@@ -1146,7 +1146,7 @@ export default function ResponsiveDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-4">
 
       {/* الشعار فوق البطاقة مباشرة */}
       <div className="mb-14 flex justify-center w-full">
@@ -1169,7 +1169,7 @@ export default function ResponsiveDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200 p-8">
+        <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl border border-neutral-200 p-8">
 
           {/* العنوان والوصف */}
           <div className="text-center mb-8">
@@ -1192,7 +1192,7 @@ export default function ResponsiveDashboard() {
               className={cn(
                 "flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all",
                 loginMethod === "credentials"
-                  ? "bg-white text-blue-600 shadow-sm"
+                  ? "bg-white dark:bg-neutral-800 text-blue-600 shadow-sm"
                   : "text-neutral-600 hover:text-neutral-900"
               )}
             >
@@ -1210,7 +1210,7 @@ export default function ResponsiveDashboard() {
               className={cn(
                 "flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all",
                 loginMethod === "phone"
-                  ? "bg-white text-blue-600 shadow-sm"
+                  ? "bg-white dark:bg-neutral-800 text-blue-600 shadow-sm"
                   : "text-neutral-600 hover:text-neutral-900"
               )}
             >
@@ -1426,7 +1426,7 @@ export default function ResponsiveDashboard() {
   // صفحة نسيت كلمة المرور
   function renderForgotPasswordPage() {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-4">
 
         {/* الشعار */}
         <div className="mb-14 flex justify-center w-full">
@@ -1449,7 +1449,7 @@ export default function ResponsiveDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200 p-8">
+          <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl border border-neutral-200 p-8">
 
             {/* زر الرجوع */}
             <button
@@ -1715,7 +1715,7 @@ export default function ResponsiveDashboard() {
     ];
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-4">
         <div className="max-w-6xl mx-auto py-12">
           {/* الترحيب */}
           <motion.div
@@ -1753,7 +1753,7 @@ export default function ResponsiveDashboard() {
                 onClick={card.onClick || (() => console.log(`تم النقر على: ${card.title}`))}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[120px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-200 bg-white shadow-md hover:shadow-2xl transition-all duration-300">
+                <div className="relative h-full min-h-[120px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-200 bg-white dark:bg-neutral-800 shadow-md hover:shadow-2xl transition-all duration-300">
                   {/* طبقة التدرّج */}
                   <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-20 group-hover:opacity-30 blur-2xl transition", card.accent)} />
                   
@@ -1794,8 +1794,8 @@ export default function ResponsiveDashboard() {
         
         {/* قسم الخدمات الأساسية */}
         <div>
-          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الخدمات الأساسية</h2>
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+          <h2 className="text-sm sm:text-base font-bold mb-3 sm:mb-4 text-neutral-700 dark:text-neutral-200 tracking-wide uppercase">الخدمات الأساسية</h2>
+          <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 items-stretch">
             {primaryCards.map((c) => ({ ...c, onAction: c.onAction?.bind(null, setView) })).map((card, idx) => (
               <motion.button
                 key={card.title + idx}
@@ -1805,22 +1805,22 @@ export default function ResponsiveDashboard() {
                 onClick={() => handleCardClick(card)}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                <div className="relative h-full min-h-[140px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800 shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-neutral-100 dark:border-neutral-700">
                   <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
-                  <div className="relative p-5 flex flex-col gap-3 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
-                        <card.icon className="h-3.5 w-3.5 shrink-0" />
+                  <div className="relative p-3 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-1 sm:gap-2">
+                      <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-neutral-900 text-white rounded-full text-[10px] sm:text-xs font-semibold shrink-0 max-w-[80%] sm:max-w-[70%]">
+                        <card.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         <span className="truncate">{card.title}</span>
                       </div>
                       {card.badge !== null && (
-                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
+                        <span className="inline-flex items-center justify-center h-5 sm:h-6 min-w-[1.25rem] sm:min-w-[1.5rem] px-1.5 sm:px-2 text-[10px] sm:text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
                       )}
                     </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
+                    <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-300 leading-relaxed flex-1 line-clamp-2">{card.subtitle}</p>
                   </div>
-                  <div className="px-5 pb-5 mt-auto">
-                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
+                  <div className="px-3 sm:px-5 pb-3 sm:pb-5 mt-auto">
+                    <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors">{card.action}</span>
                   </div>
                 </div>
               </motion.button>
@@ -1830,8 +1830,8 @@ export default function ResponsiveDashboard() {
 
         {/* قسم الخدمات الإضافية */}
         <div>
-          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الخدمات الإضافية</h2>
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
+          <h2 className="text-sm sm:text-base font-bold mb-3 sm:mb-4 text-neutral-700 dark:text-neutral-200 tracking-wide uppercase">الخدمات الإضافية</h2>
+          <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 items-stretch">
             {regularCards.map((card, idx) => (
               <motion.button
                 key={card.title + idx}
@@ -1841,22 +1841,22 @@ export default function ResponsiveDashboard() {
                 onClick={() => handleCardClick(card)}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                <div className="relative h-full min-h-[140px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800 shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-neutral-100 dark:border-neutral-700">
                   <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", card.accent)} />
-                  <div className="relative p-5 flex flex-col gap-3 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
-                        <card.icon className="h-3.5 w-3.5 shrink-0" />
+                  <div className="relative p-3 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-1 sm:gap-2">
+                      <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-neutral-900 text-white rounded-full text-[10px] sm:text-xs font-semibold shrink-0 max-w-[80%] sm:max-w-[70%]">
+                        <card.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         <span className="truncate">{card.title}</span>
                       </div>
                       {card.badge !== null && (
-                        <span className="inline-flex items-center justify-center h-6 min-w-[1.5rem] px-2 text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
+                        <span className="inline-flex items-center justify-center h-5 sm:h-6 min-w-[1.25rem] sm:min-w-[1.5rem] px-1.5 sm:px-2 text-[10px] sm:text-xs font-bold rounded-full text-white shrink-0" style={{ backgroundColor: '#B21063' }}>{card.badge}</span>
                       )}
                     </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{card.subtitle}</p>
+                    <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-300 leading-relaxed flex-1 line-clamp-2">{card.subtitle}</p>
                   </div>
-                  <div className="px-5 pb-5 mt-auto">
-                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors">{card.action}</span>
+                  <div className="px-3 sm:px-5 pb-3 sm:pb-5 mt-auto">
+                    <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors">{card.action}</span>
                   </div>
                 </div>
               </motion.button>
@@ -1945,8 +1945,8 @@ export default function ResponsiveDashboard() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-base font-bold mb-4 text-neutral-500 tracking-wide uppercase">الروابط الخارجية</h2>
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
+          <h2 className="text-sm sm:text-base font-bold mb-3 sm:mb-4 text-neutral-700 dark:text-neutral-200 tracking-wide uppercase">الروابط الخارجية</h2>
+          <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 items-stretch">
             {externalLinks.map((link, idx) => (
               <motion.a
                 key={link.title}
@@ -1958,21 +1958,21 @@ export default function ResponsiveDashboard() {
                 transition={{ delay: 0.03 * idx }}
                 className="group h-full w-full text-right cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="relative h-full min-h-[200px] flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-white">
+                <div className="relative h-full min-h-[140px] sm:min-h-[200px] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800 shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] transition-all duration-200 border border-neutral-100 dark:border-neutral-700">
                   <div className={cn("absolute inset-x-0 -top-16 h-40 bg-gradient-to-r opacity-10 group-hover:opacity-20 blur-2xl transition", link.accent)} />
-                  <div className="relative p-5 flex flex-col gap-3 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-full text-xs font-semibold shrink-0 max-w-[70%]">
-                        <link.icon className="h-3.5 w-3.5 shrink-0" />
+                  <div className="relative p-3 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-1">
+                    <div className="flex items-start justify-between gap-1 sm:gap-2">
+                      <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-neutral-900 text-white rounded-full text-[10px] sm:text-xs font-semibold shrink-0 max-w-[80%] sm:max-w-[70%]">
+                        <link.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                         <span className="truncate">{link.title}</span>
                       </div>
                     </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed flex-1">{link.description}</p>
+                    <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-300 leading-relaxed flex-1 line-clamp-2">{link.description}</p>
                   </div>
-                  <div className="px-5 pb-5 mt-auto">
-                    <span className="text-sm font-semibold text-neutral-600 group-hover:text-neutral-900 transition-colors flex items-center gap-1">
+                  <div className="px-3 sm:px-5 pb-3 sm:pb-5 mt-auto">
+                    <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors flex items-center gap-1">
                       فتح الرابط
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -1996,28 +1996,28 @@ export default function ResponsiveDashboard() {
   function renderSettingsPage() {
     return (
       <div className="px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
-          <h2 className="text-2xl font-bold mb-6 text-neutral-900">الإعدادات</h2>
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 shadow-sm p-6">
+          <h2 className="text-2xl font-bold mb-6 text-neutral-900 dark:text-neutral-100">الإعدادات</h2>
 
           <div className="space-y-6">
             {/* معلومات الحساب */}
             <div className="border-b border-neutral-200 pb-6">
-              <h3 className="text-lg font-bold mb-4 text-neutral-800">معلومات الحساب</h3>
+              <h3 className="text-lg font-bold mb-4 text-neutral-800 dark:text-neutral-200">معلومات الحساب</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">الاسم:</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">الاسم:</span>
                   <span className="font-semibold">{currentUser?.name || 'غير محدد'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">البريد الإلكتروني:</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">البريد الإلكتروني:</span>
                   <span className="font-semibold">{currentUser?.email || 'غير محدد'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">الرقم الوظيفي:</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">الرقم الوظيفي:</span>
                   <span className="font-semibold">{currentUser?.employeeId || 'غير محدد'}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">القسم:</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">القسم:</span>
                   <span className="font-semibold">{currentUser?.department || 'غير محدد'}</span>
                 </div>
               </div>
@@ -2025,18 +2025,18 @@ export default function ResponsiveDashboard() {
 
             {/* إعدادات الإشعارات */}
             <div className="border-b border-neutral-200 pb-6">
-              <h3 className="text-lg font-bold mb-4 text-neutral-800">الإشعارات</h3>
+              <h3 className="text-lg font-bold mb-4 text-neutral-800 dark:text-neutral-200">الإشعارات</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">إشعارات البريد الإلكتروني</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">إشعارات البريد الإلكتروني</span>
                   <button className="w-12 h-6 bg-[#B21063] rounded-full relative">
-                    <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></span>
+                    <span className="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-neutral-800 rounded-full"></span>
                   </button>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">إشعارات الهاتف</span>
+                  <span className="text-neutral-600 dark:text-neutral-300">إشعارات الهاتف</span>
                   <button className="w-12 h-6 bg-neutral-300 rounded-full relative">
-                    <span className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
+                    <span className="absolute right-1 top-1 w-4 h-4 bg-white dark:bg-neutral-800 rounded-full"></span>
                   </button>
                 </div>
               </div>
@@ -2044,22 +2044,22 @@ export default function ResponsiveDashboard() {
 
             {/* إعدادات أخرى */}
             <div>
-              <h3 className="text-lg font-bold mb-4 text-neutral-800">عام</h3>
+              <h3 className="text-lg font-bold mb-4 text-neutral-800 dark:text-neutral-200">عام</h3>
               <div className="space-y-3">
-                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 hover:bg-neutral-50">
-                  <span className="text-neutral-700">تغيير كلمة المرور</span>
-                  <ChevronLeft className="h-5 w-5 text-neutral-400" />
+                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700">
+                  <span className="text-neutral-700 dark:text-neutral-200">تغيير كلمة المرور</span>
+                  <ChevronLeft className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                 </button>
-                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 hover:bg-neutral-50">
-                  <span className="text-neutral-700">اللغة</span>
+                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700">
+                  <span className="text-neutral-700 dark:text-neutral-200">اللغة</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-neutral-500">العربية</span>
-                    <ChevronLeft className="h-5 w-5 text-neutral-400" />
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">العربية</span>
+                    <ChevronLeft className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                   </div>
                 </button>
-                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 hover:bg-neutral-50">
-                  <span className="text-neutral-700">عن التطبيق</span>
-                  <ChevronLeft className="h-5 w-5 text-neutral-400" />
+                <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700">
+                  <span className="text-neutral-700 dark:text-neutral-200">عن التطبيق</span>
+                  <ChevronLeft className="h-5 w-5 text-neutral-400 dark:text-neutral-500" />
                 </button>
               </div>
             </div>
@@ -2092,7 +2092,7 @@ export default function ResponsiveDashboard() {
     ];
     return (
       <div dir="rtl">
-        <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+        <div className="sticky top-0 z-40 md:z-30 bg-white dark:bg-neutral-800 border-b border-neutral-100 rounded-xl">
           <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
             <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
               <div className="flex items-center gap-1 bg-neutral-0 rounded-full p-1 min-w-0">
@@ -2102,7 +2102,7 @@ export default function ResponsiveDashboard() {
                     'flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0',
                     attendanceSubTab === key
                       ? 'bg-neutral-900 text-white shadow-sm'
-                      : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900'
+                      : 'bg-neutral-50 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 hover:text-neutral-900 dark:hover:text-white'
                   )}>
                   <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
                   <span className="truncate">{label}</span>
@@ -2128,9 +2128,9 @@ export default function ResponsiveDashboard() {
       ['archive', 'أرشيف الصادر', Archive],
     ];
     return (
-      <div dir="rtl" className="min-h-screen" style={{ backgroundColor: '#F4F8FE' }}>
+      <div dir="rtl" className="min-h-screen" style={{ backgroundColor: dark ? '#0a0a0a' : '#F4F8FE' }}>
         {/* Tab Bar */}
-        <div className="sticky top-0 z-40 md:z-30 bg-white border-b border-neutral-100 rounded-xl">
+        <div className="sticky top-0 z-40 md:z-30 bg-white dark:bg-neutral-800 border-b border-neutral-100 rounded-xl">
           <div className="max-w-[1400px] mx-auto px-0 sm:px-2 rounded-xl overflow-hidden">
             <div className="px-2 sm:px-4 py-2 border-b border-neutral-100">
               <div className="flex items-center gap-1 bg-neutral-0 rounded-full p-1 min-w-0">
@@ -2140,7 +2140,7 @@ export default function ResponsiveDashboard() {
                     'flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-[13px] font-semibold transition-all duration-200 min-w-0',
                     transactionsSubTab === key
                       ? 'bg-neutral-900 text-white shadow-sm'
-                      : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900'
+                      : 'bg-neutral-50 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 hover:text-neutral-900 dark:hover:text-white'
                   )}>
                   <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
                   <span className="truncate">{label}</span>
@@ -2306,10 +2306,10 @@ export default function ResponsiveDashboard() {
 
 
         {/* Body */}
-        <div className="py-4 pb-24 md:pb-6 flex gap-3 md:gap-4 px-2 sm:px-4 md:px-6" style={{ backgroundColor: "#F4F8FE" }}>
+        <div className="py-4 pb-24 md:pb-6 flex gap-3 md:gap-[150px] px-3 sm:px-4 md:pe-[150px] md:ps-4">
           {/* Sidebar — Navigation Rail (ديسكتوب فقط) */}
           <aside className="hidden md:flex flex-col w-[72px] shrink-0">
-            <nav className="sticky top-[72px] rounded-2xl py-3 px-1.5 bg-white/80 backdrop-blur border border-white/80 shadow-[0_2px_16px_rgba(0,0,0,0.07)] flex flex-col items-center gap-1 max-h-[calc(100vh-100px)] overflow-visible">
+            <nav className="sticky top-[72px] rounded-2xl py-3 px-1.5 bg-white/80 dark:bg-neutral-800/80 backdrop-blur border border-white/80 dark:border-neutral-700/80 shadow-[0_2px_16px_rgba(0,0,0,0.07)] flex flex-col items-center gap-1 max-h-[calc(100vh-100px)] overflow-visible">
               {/* Logo */}
               <div className="mb-2 shrink-0">
                 <img
@@ -2338,61 +2338,61 @@ export default function ResponsiveDashboard() {
                       "w-full flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl transition-all duration-150 group",
                       activeKey === key
                         ? "bg-neutral-900 text-white shadow-sm"
-                        : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800"
+                        : "text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-white"
                     )}
                   >
                     <Icon className="h-5 w-5 shrink-0" />
-                    <span className="text-[9px] font-semibold leading-tight text-center w-full truncate px-0.5">{title}</span>
+                    <span className="text-[12px] font-semibold leading-tight text-center w-full truncate px-0.5">{title}</span>
                   </button>
                 ))}
               </div>
 
               {/* حسابي */}
-              <div className="shrink-0 w-full pt-2 border-t border-neutral-100 relative z-[75]">
+              <div className="shrink-0 w-full pt-2 border-t border-neutral-100 dark:border-neutral-700 relative z-[75]">
                 <button
                   onClick={() => setAccountMenuOpen(v => !v)}
-                  className="w-full flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl hover:bg-neutral-100 transition-colors"
+                  className="w-full flex flex-col items-center gap-0.5 px-1 py-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                 >
                   <div className="w-6 h-6 rounded-full bg-[#B21063]/10 flex items-center justify-center shrink-0">
                     <UserCircle className="h-4 w-4 text-[#B21063]" />
                   </div>
-                  <span className="text-[9px] font-semibold text-neutral-400">حسابي</span>
+                  <span className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-200">حسابي</span>
                 </button>
                 {accountMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-[55]" onClick={() => setAccountMenuOpen(false)} />
-                    <div className="absolute bottom-full right-0 mb-2 w-64 bg-white border border-neutral-200 rounded-2xl shadow-xl z-[70] overflow-hidden">
-                      <div className="px-4 py-3 border-b border-neutral-100 bg-neutral-50">
-                        <p className="text-sm font-bold text-neutral-800">محمد العبدالله</p>
-                        <p className="text-xs text-neutral-500">مدير المبيعات</p>
+                    <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-2xl shadow-xl z-[70] overflow-hidden">
+                      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-700">
+                        <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200">محمد العبدالله</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">مدير المبيعات</p>
                       </div>
                       <div className="py-1">
                         <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                          <UserCircle className="h-4 w-4 text-neutral-400" />
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                          <UserCircle className="h-4 w-4 text-neutral-400 dark:text-neutral-400" />
                           الملف الشخصي
                         </button>
                         <button onClick={() => { setView("settings"); setAccountMenuOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                          <Settings className="h-4 w-4 text-neutral-400" />
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                          <Settings className="h-4 w-4 text-neutral-400 dark:text-neutral-400" />
                           الإعدادات
                         </button>
                         <button onClick={() => { setDark(!dark); setAccountMenuOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                          {dark ? <Sun className="h-4 w-4 text-neutral-400" /> : <Moon className="h-4 w-4 text-neutral-400" />}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                          {dark ? <Sun className="h-4 w-4 text-neutral-400 dark:text-neutral-400" /> : <Moon className="h-4 w-4 text-neutral-400 dark:text-neutral-400" />}
                           {dark ? "الوضع الفاتح" : "الوضع الداكن"}
                         </button>
                         {/* حجم الخط */}
-                        <div className="px-4 py-3 border-t border-neutral-100">
+                        <div className="px-4 py-3 border-t border-neutral-100 dark:border-neutral-700">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              <Type className="h-4 w-4 text-neutral-400 shrink-0" />
-                              <span className="text-sm text-neutral-700">حجم الخط</span>
+                              <Type className="h-4 w-4 text-neutral-400 dark:text-neutral-400 shrink-0" />
+                              <span className="text-sm text-neutral-700 dark:text-neutral-300">حجم الخط</span>
                             </div>
                             <span className="text-xs font-bold tabular-nums" style={{ color: '#B21063' }}>{fontScale}%</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
+                            <span className="text-[11px] text-neutral-400 dark:text-neutral-400 font-bold shrink-0 select-none">أ</span>
                             <div className="relative flex-1">
                               <input
                                 type="range"
@@ -2407,24 +2407,24 @@ export default function ResponsiveDashboard() {
                                 }}
                               />
                             </div>
-                            <span className="text-[15px] text-neutral-400 font-bold shrink-0 select-none">أ</span>
+                            <span className="text-[15px] text-neutral-400 dark:text-neutral-400 font-bold shrink-0 select-none">أ</span>
                           </div>
                           <div className="flex justify-between mt-1.5">
-                            <button onClick={() => setFontScale(75)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أصغر</button>
-                            <button onClick={() => setFontScale(100)} className="text-[10px] text-neutral-400 hover:text-neutral-600 font-semibold">افتراضي</button>
-                            <button onClick={() => setFontScale(150)} className="text-[10px] text-neutral-400 hover:text-neutral-600">أكبر</button>
+                            <button onClick={() => setFontScale(75)} className="text-[10px] text-neutral-400 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">أصغر</button>
+                            <button onClick={() => setFontScale(100)} className="text-[10px] text-neutral-400 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 font-semibold">افتراضي</button>
+                            <button onClick={() => setFontScale(150)} className="text-[10px] text-neutral-400 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">أكبر</button>
                           </div>
                         </div>
                         <button onClick={() => setAccountMenuOpen(false)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors">
-                          <Languages className="h-4 w-4 text-neutral-400" />
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                          <Languages className="h-4 w-4 text-neutral-400 dark:text-neutral-400" />
                           <span>اللغة</span>
-                          <span className="mr-auto text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded-full">العربية</span>
+                          <span className="mr-auto text-xs text-neutral-400 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-700 px-2 py-0.5 rounded-full">العربية</span>
                         </button>
                       </div>
-                      <div className="border-t border-neutral-100 py-1">
+                      <div className="border-t border-neutral-100 dark:border-neutral-700 py-1">
                         <button onClick={() => { setCurrentPage("login"); setAccountMenuOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium">
                           <LogOut className="h-4 w-4" />
                           تسجيل الخروج
                         </button>
@@ -2443,7 +2443,7 @@ export default function ResponsiveDashboard() {
         </div>
 
         {/* ── Bottom Navigation (جوال فقط) ── */}
-        <nav className="fixed bottom-0 inset-x-0 z-30 md:hidden bg-white border-t border-neutral-200 safe-area-bottom">
+        <nav className="fixed bottom-0 inset-x-0 z-30 md:hidden bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 safe-area-bottom">
           <div className="flex items-stretch h-16">
             {bottomTabs.map((tab) => {
               const isActive = bottomTab === tab.key;
@@ -2462,8 +2462,8 @@ export default function ResponsiveDashboard() {
                   {isActive && (
                     <span className="absolute top-0 inset-x-2 h-0.5 rounded-b-full bg-[#B21063]" />
                   )}
-                  <tab.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")} />
-                  <span className={cn("text-[10px] font-semibold transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400")}>
+                  <tab.icon className={cn("h-5 w-5 transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400 dark:text-neutral-400")} />
+                  <span className={cn("text-[10px] font-semibold transition-colors", isActive ? "text-[#B21063]" : "text-neutral-400 dark:text-neutral-400")}>
                     {tab.label}
                   </span>
                 </button>
