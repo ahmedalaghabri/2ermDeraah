@@ -745,7 +745,7 @@ export default function ResponsiveDashboard() {
   const [currentPage, setCurrentPage] = useState("welcome"); // TODO: restore "login"
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [bottomTab, setBottomTab] = useState("transactions");
+  const [, setBottomTab] = useState("transactions");
   const [fontScale, setFontScale] = useState<number>(() => {
     const saved = localStorage.getItem("app-font-scale");
     const n = saved ? Number(saved) : 100;
@@ -2446,7 +2446,9 @@ export default function ResponsiveDashboard() {
         <nav className="fixed bottom-0 inset-x-0 z-30 md:hidden bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 safe-area-bottom">
           <div className="flex items-stretch h-16">
             {bottomTabs.map((tab) => {
-              const isActive = bottomTab === tab.key;
+              const isActive = view === tab.view
+                || (tab.key === "transactions" && ["transactions", "add", "inbox", "outbox", "transaction_details", "annual_leave", "transport_allowance", "transaction_selection", "add_form"].includes(view))
+                || (tab.key === "attendance" && ["attendance", "attendance_report", "exit_permission", "hazer_system"].includes(view));
               return (
                 <button
                   key={tab.key}

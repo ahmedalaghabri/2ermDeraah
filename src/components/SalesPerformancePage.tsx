@@ -21,10 +21,6 @@ import {
   SlidersHorizontal,
   Filter,
   MoreVertical,
-  Users,
-  Shield,
-  Store,
-  UserCircle,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -406,17 +402,29 @@ function scaleRangeCount(base: number, from: string, to: string): number {
 // Calendar day achievement %s (uses per-seller aggregate for the filtered set)
 function genPeriodDayPcts(selIdxs: number[], year: number, month: number) {
   const days = getDaysInMonth(year, month);
+  const now = new Date();
+  const todayDay = now.getDate();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
   const r: Record<number, number> = {};
+  const isFutureMonth = year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth());
   for (let d = 1; d <= days; d++) {
-    const current = selIdxs.reduce((s, si) => s + genSellerMonthData(si, year, month)[d - 1].current, 0);
-    const target  = selIdxs.reduce((s, si) => s + sellerPeriodTarget(si, year, month, "day"), 0);
-    r[d] = target > 0 ? Math.min(Math.round((current / target) * 100), 130) : 80;
+    if (isFutureMonth || (isCurrentMonth && d > todayDay)) {
+      r[d] = 0;
+    } else {
+      const current = selIdxs.reduce((s, si) => s + genSellerMonthData(si, year, month)[d - 1].current, 0);
+      const target  = selIdxs.reduce((s, si) => s + sellerPeriodTarget(si, year, month, "day"), 0);
+      r[d] = target > 0 ? Math.min(Math.round((current / target) * 100), 130) : 80;
+    }
   }
   return r;
 }
 
 // Month-tab achievement % for the calendar strip
 function genMonthPct(selIdxs: number[], year: number, month: number) {
+  const now = new Date();
+  if (year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth())) {
+    return 0;
+  }
   const current = selIdxs.reduce((s, si) => s + sellerPeriodSales(si, year, month, "month", 1), 0);
   const target  = selIdxs.reduce((s, si) => s + sellerPeriodTarget(si, year, month, "month"), 0);
   return target > 0 ? Math.min(Math.round((current / target) * 100), 130) : 80;
@@ -988,7 +996,7 @@ function DrillTable({
             })}
           </tbody>
           <tfoot>
-            <tr className="md:sticky md:bottom-0 z-20 bg-neutral-100 dark:bg-neutral-700 border-t-2 border-neutral-300 dark:border-neutral-600 font-bold shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+            <tr className="bg-neutral-100 dark:bg-neutral-700 border-t-2 border-neutral-300 dark:border-neutral-600 font-bold">
               {visibleCols.map(col => (
                 <td key={col.key} className="px-2 sm:px-3 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm bg-neutral-100 dark:bg-neutral-700">
                   {renderFooterCell(col.key)}
@@ -1472,7 +1480,7 @@ function DateRangePicker({ dateFrom, dateTo, onFromChange, onToChange, iconOnly,
           onClick={openDropdown}
           title={`${displayFrom} — ${displayTo}`}
           className={cn(
-            "px-2 sm:px-2.5 py-1 rounded-[5px] text-[11px] font-semibold transition-all whitespace-nowrap",
+            "px-2 sm:px-2.5 py-1 rounded-xl text-[11px] sm:text-[14px] font-semibold sm:font-bold transition-all whitespace-nowrap",
             open || active
               ? "bg-neutral-800 text-white shadow-sm"
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
@@ -1555,7 +1563,7 @@ function MultiSelectDropdown({ options, selected, onChange, placeholder, activeC
       <button
         onClick={() => setOpen(v => !v)}
         className={cn(
-          "flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[12px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white dark:bg-neutral-800 focus:outline-none cursor-pointer font-medium transition-colors whitespace-nowrap",
+          "flex items-center gap-1 sm:gap-1.5 text-[12px] sm:text-[14px] border rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 bg-white dark:bg-neutral-800 focus:outline-none cursor-pointer font-medium sm:font-bold transition-colors whitespace-nowrap",
           hasSelection ? "border-[#B21063] text-[#B21063]" : "border-neutral-200 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300"
         )}
       >
@@ -1644,7 +1652,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
   const today = new Date();
 
   // Period
-  const [period, setPeriod] = useState<Period>("month");
+  const [period, setPeriod] = useState<Period>("day");
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState<number>(today.getDate());
@@ -1800,7 +1808,14 @@ export default function SalesPerformancePage({ onBack }: Props) {
   );
 
   // Dynamic KPIs — recalculate when period / month / year / day / filter changes
+  const isFuturePeriod = year > today.getFullYear()
+    || (year === today.getFullYear() && month > today.getMonth())
+    || (period === "day" && year === today.getFullYear() && month === today.getMonth() && selectedDay > today.getDate());
   const periodKpis = useMemo(() => {
+    if (isFuturePeriod) {
+      const prevSales = filteredIdxs.reduce((s, si) => s + sellerPeriodPrevSales(si, year, month, period, selectedDay), 0);
+      return { sales: 0, prevSales, target: 0, invoices: 0, pieces: 0, customers: 0 };
+    }
     if (viewMode === "table") {
       const sales     = filteredIdxs.reduce((s, si) => s + sellerRangeSales(si, dateFrom, dateTo), 0);
       const prevSales = filteredIdxs.reduce((s, si) => s + sellerRangePrevSales(si, dateFrom, dateTo), 0);
@@ -1817,7 +1832,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
     const pieces    = filteredIdxs.reduce((s, si) => s + scalePeriodCount(SELLERS[si].pieces, year, month, period), 0);
     const customers = filteredIdxs.reduce((s, si) => s + scalePeriodCount(SELLERS[si].customers, year, month, period), 0);
     return { sales, prevSales, target, invoices, pieces, customers };
-  }, [filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo]);
+  }, [filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo, isFuturePeriod]);
 
   const totalSales    = periodKpis.sales;
   const totalTarget   = periodKpis.target;
@@ -1826,7 +1841,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
   const totalPieces   = periodKpis.pieces;
   const totalCustomers = periodKpis.customers;
   const achievementPct = totalTarget > 0 ? Math.round((totalSales / totalTarget) * 100) : 0;
-  const growthPct = totalPrevSales > 0 ? Math.round(((totalSales - totalPrevSales) / totalPrevSales) * 100) : 0;
+  const growthPct = isFuturePeriod ? 0 : (totalPrevSales > 0 ? Math.round(((totalSales - totalPrevSales) / totalPrevSales) * 100) : 0);
   const avgInvoice = totalInvoices > 0 ? Math.round(totalSales / totalInvoices) : 0;
 
   // Calendar day pcts — based on filtered sellers
@@ -1844,10 +1859,13 @@ export default function SalesPerformancePage({ onBack }: Props) {
     function groupData(items: { id: string; name: string }[], keyFn: (s: typeof SELLERS[number]) => string) {
       return items.map(item => {
         const idxs = filteredSellers.map((s, i) => keyFn(s) === item.id ? filteredIdxs[i] : -1).filter(i => i >= 0);
+        if (isFuturePeriod) {
+          return { label: item.name, value: 0, pct: 0 };
+        }
         const value = idxs.reduce((a, si) => a + sellerPeriodSales(si, year, month, period, selectedDay), 0);
         const tgt   = idxs.reduce((a, si) => a + sellerPeriodTarget(si, year, month, period), 0);
         return { label: item.name, value, pct: tgt > 0 ? Math.round((value / tgt) * 100) : 0 };
-      }).filter(d => d.value > 0 || d.pct > 0);
+      }).filter(d => isFuturePeriod || d.value > 0 || d.pct > 0);
     }
     if (filterType === "areas") return groupData(AREAS, s => s.areaId);
     if (filterType === "supervisors") return groupData(SUPERVISORS, s => s.supervisorId);
@@ -1855,17 +1873,24 @@ export default function SalesPerformancePage({ onBack }: Props) {
     // sellers or team
     return filteredSellers.map((s, i) => {
       const si = filteredIdxs[i];
+      if (isFuturePeriod) {
+        return { label: s.name, value: 0, pct: 0 };
+      }
       const value = sellerPeriodSales(si, year, month, period, selectedDay);
       const tgt   = sellerPeriodTarget(si, year, month, period);
       return { label: s.name, value, pct: tgt > 0 ? Math.round((value / tgt) * 100) : 0 };
     });
-  }, [filteredSellers, filteredIdxs, filterType, period, year, month, selectedDay]);
+  }, [filteredSellers, filteredIdxs, filterType, period, year, month, selectedDay, isFuturePeriod]);
 
   // Table data — period-aware rows (range-aware when viewMode=table)
   const tableRows = useMemo(() =>
     filteredSellers.map((s, i) => {
       const si = filteredIdxs[i];
       const useRange = viewMode === "table";
+      if (isFuturePeriod) {
+        const prev = useRange ? sellerRangePrevSales(si, dateFrom, dateTo) : sellerPeriodPrevSales(si, year, month, period, selectedDay);
+        return { ...s, sales: 0, target: 0, prevSales: prev, invoices: 0, pieces: 0, customers: 0 };
+      }
       const sales     = useRange ? sellerRangeSales(si, dateFrom, dateTo)     : sellerPeriodSales(si, year, month, period, selectedDay);
       const target    = useRange ? sellerRangeTarget(si, dateFrom, dateTo)    : sellerPeriodTarget(si, year, month, period);
       const prev      = useRange ? sellerRangePrevSales(si, dateFrom, dateTo) : sellerPeriodPrevSales(si, year, month, period, selectedDay);
@@ -1874,7 +1899,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
       const customers = useRange ? scaleRangeCount(s.customers, dateFrom, dateTo) : scalePeriodCount(s.customers, year, month, period);
       return { ...s, sales, target, prevSales: prev, invoices, pieces, customers };
     }),
-    [filteredSellers, filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo]
+    [filteredSellers, filteredIdxs, period, year, month, selectedDay, viewMode, dateFrom, dateTo, isFuturePeriod]
   );
 
   const tableData = useMemo(() => {
@@ -1929,28 +1954,27 @@ export default function SalesPerformancePage({ onBack }: Props) {
             className="overflow-hidden"
           >
           <div className="px-1 sm:px-4 py-2 border-b border-neutral-100 dark:border-neutral-700">
-            <div className="flex items-center gap-1 bg-neutral-[0] dark:bg-neutral-800 rounded-full p-1 w-full min-w-0 sm:max-w-[50%] sm:mx-auto">
+            <div className="flex items-center gap-1 bg-neutral-[0] dark:bg-neutral-800 rounded-full p-1 w-full min-w-0 sm:max-w-[60%] sm:mx-auto">
             {([
-              ["team","الفريق", Users],
-              ["areas","المناطق", MapPin],
-              ["supervisors","المشرفين", Shield],
-              ["showrooms","المعارض", Store],
-              ["sellers","البائعين", UserCircle]
-            ] as [FilterType, string, React.FC<React.SVGProps<SVGSVGElement> & { className?: string }>][]).map(([type, label, Icon]) => (
+              ["team","الفريق"],
+              ["areas","المناطق"],
+              ["supervisors","المشرفين"],
+              ["showrooms","المعارض"],
+              ["sellers","البائعين"]
+            ] as [FilterType, string][]).map(([type, label]) => (
               <motion.button
                 key={type}
                 onClick={() => { setFilterType(type); resetTableFilters(); }}
                 layout
                 transition={{ type: "spring", stiffness: 100, damping: 30 }}
                 className={cn(
-                  "flex flex-1 flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-1.5 px-1 rounded-full text-[14px] font-bold transition-all duration-200 min-w-0",
+                  "flex flex-1 items-center justify-center py-1.5 px-2 sm:px-3 rounded-full text-[13px] sm:text-[14px] font-bold transition-all duration-200 min-w-0",
                   filterType === type
                     ? "bg-neutral-900 text-white shadow-sm"
                     : "bg-neutral-50 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 hover:text-neutral-900 dark:hover:text-white"
                 )}
               >
-                <Icon className="hidden sm:block w-4 h-4" />
-                <span className="truncate">{label}</span>
+                {label}
               </motion.button>
             ))}
           </div>
@@ -2053,8 +2077,32 @@ export default function SalesPerformancePage({ onBack }: Props) {
                       value={tableSearch}
                       onChange={e => setTableSearch(e.target.value)}
                       placeholder="بحث في النتائج"
-                      className="w-full rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-[12px] sm:text-[12px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
+                      className="w-full rounded-xl border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-1.5 text-[12px] sm:text-[14px] font-medium sm:font-bold text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#B21063]/30"
                     />
+                  </div>
+                  <div className="hidden sm:block flex-1 min-w-[1px]" />
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-2xl p-0.5 border border-neutral-200 dark:border-neutral-600">
+                      {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
+                        <button key={p} onClick={() => setPeriod(p as Period)}
+                          className={cn("px-2 sm:px-2.5 py-1 rounded-2xl text-[14px] font-bold transition-all whitespace-nowrap",
+                            period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
+                          {l}
+                        </button>
+                      ))}
+                      <DateRangePicker iconOnly active={customRangeActive} dateFrom={dateFrom} dateTo={dateTo}
+                        onFromChange={v => { setDateFrom(v); setCustomRangeActive(true); }}
+                        onToChange={v => { setDateTo(v); setCustomRangeActive(true); }} />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                        <ChevronRight className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                      </button>
+                      <span className="text-[14px] font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
+                      <button onClick={nextMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
+                        <ChevronLeft className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -2062,8 +2110,8 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 <>
                   <div className="flex items-center justify-center sm:justify-center gap-3 sm:gap-4 w-full overflow-x-auto">
                     <div className="flex items-center gap-4 shrink-0">
-                      <span className="text-xs sm:text-sm font-bold text-neutral-700 dark:text-neutral-300">مؤشر أداء</span>
-                      <span className="text-[12px] sm:text-[12px] text-neutral-400">
+                      <span className="text-xs sm:text-[14px] font-bold text-neutral-700 dark:text-neutral-300">مؤشر أداء</span>
+                      <span className="text-[12px] sm:text-[14px] font-bold text-neutral-400">
                         {period === "day"
                           ? `${selectedDay} ${MONTHS_AR[month]} ${toArabicDigits(String(year))}`
                           : period === "month"
@@ -2088,10 +2136,10 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     </div>
                     <div className="hidden sm:block flex-1 min-w-[1px]" />
                     <div className="hidden sm:flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-lg p-0.5 border border-neutral-200 dark:border-neutral-600">
+                      <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-2xl p-0.5 border border-neutral-200 dark:border-neutral-600">
                         {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
                           <button key={p} onClick={() => setPeriod(p as Period)}
-                            className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[12px] font-semibold transition-all whitespace-nowrap",
+                            className={cn("px-2 sm:px-2.5 py-1 rounded-2xl text-[14px] font-bold transition-all whitespace-nowrap",
                               period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
                             {l}
                           </button>
@@ -2104,7 +2152,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                         <button onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
                           <ChevronRight className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
                         </button>
-                        <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
+                        <span className="text-[14px] font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
                         <button onClick={nextMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
                           <ChevronLeft className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
                         </button>
@@ -2115,7 +2163,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
               )}
               <div className="mr-auto flex items-center gap-1 sm:gap-1.5 shrink-0">
                 {/* View mode tabs */}
-                <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-700 rounded-xl p-0.5">
+                <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-700 rounded-2xl p-0.5">
                   {([
                     ["analytics", "ملخص", BarChart2],
                     ["table", "تفصيلي", Table]
@@ -2143,10 +2191,10 @@ export default function SalesPerformancePage({ onBack }: Props) {
           {/* ── Calendar / Period Navigator ── */}
           <div className="border-b border-neutral-100 dark:border-neutral-700 px-1 py-2 -mx-1 mb-3 mt-1">
             <div className="flex items-center gap-2 mb-2 sm:hidden">
-              <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-lg p-0.5 border border-neutral-200 dark:border-neutral-600 ">
+              <div className="flex items-center gap-0.5 bg-white dark:bg-neutral-800 rounded-2xl p-0.5 border border-neutral-200 dark:border-neutral-600">
                 {([["day","يومي"],["month","شهري"]] as [Period, string][]).map(([p, l]) => (
                   <button key={p} onClick={() => setPeriod(p as Period)}
-                    className={cn("px-2 sm:px-2.5 py-1 rounded-[5px] text-[12px] font-semibold transition-all whitespace-nowrap",
+                    className={cn("px-2 sm:px-2.5 py-1 rounded-2xl text-[12px] font-semibold transition-all whitespace-nowrap",
                       period === p ? "bg-neutral-800 dark:bg-neutral-600 text-white shadow-sm" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:text-neutral-300 dark:hover:text-neutral-200")}>
                     {l}
                   </button>
@@ -2159,7 +2207,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 <button onClick={prevMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
                   <ChevronRight className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
                 </button>
-                <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
+                <span className="text-[14px] font-bold text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{MONTHS_AR[month]} {year}</span>
                 <button onClick={nextMonth} className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-center transition-colors">
                   <ChevronLeft className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
                 </button>
@@ -2170,13 +2218,15 @@ export default function SalesPerformancePage({ onBack }: Props) {
                 <div className="flex gap-0.5 pb-1 justify-center" style={{ minWidth: "max-content", margin: "0 auto" }}>
                   {MONTHS_AR.map((mName, mIdx) => {
                     const isSelected = period === "month" && mIdx === month;
+                    const isFutureMonth = year > today.getFullYear() || (year === today.getFullYear() && mIdx > today.getMonth());
                     const pct = genMonthPct(filteredIdxs, year, mIdx);
                     const color = pctColor(pct);
                     return (
                       <button key={mIdx} onClick={() => { setMonth(mIdx); setPeriod("month"); }}
                         className={cn(
                           "flex flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all shrink-0 active:scale-95",
-                          "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]"
+                          "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]",
+                          isFutureMonth && !isSelected && "opacity-40"
                         )}
                         style={{
                           backgroundColor: isSelected ? "#111111" : "#ffffff",
@@ -2192,13 +2242,15 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     );
                   })}
                   {(() => {
-                    const yearPct = Math.round(MONTHS_AR.reduce((s, _, mIdx) => s + genMonthPct(filteredIdxs, year, mIdx), 0) / 12);
+                    const isFutureYear = year > today.getFullYear();
+                    const yearPct = isFutureYear ? 0 : Math.round(MONTHS_AR.reduce((s, _, mIdx) => s + genMonthPct(filteredIdxs, year, mIdx), 0) / 12);
                     const isYearSelected = period === "year";
                     return (
                       <button onClick={() => setPeriod("year")}
                         className={cn(
                           "flex flex-col items-center gap-1 rounded-xl px-2 py-2 transition-all shrink-0 active:scale-95",
-                          "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]"
+                          "sm:min-w-[76px] min-w-[calc((100vw-2rem-1rem)/7)]",
+                          isFutureYear && !isYearSelected && "opacity-40"
                         )}
                         style={{
                           backgroundColor: isYearSelected ? "#111111" : "#ffffff",
@@ -2223,6 +2275,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     const pct = dayPcts[day];
                     const isSelected = selectedDay === day;
                     const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                    const isFuture = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth()) || (year === today.getFullYear() && month === today.getMonth() && day > today.getDate());
                     const dayName = DAYS_SHORT_AR[new Date(year, month, day).getDay()];
                     const color = pctColor(pct);
                     return (
@@ -2230,7 +2283,8 @@ export default function SalesPerformancePage({ onBack }: Props) {
                         className={cn(
                           "flex flex-col items-center gap-0.5 rounded-xl py-2 transition-all shrink-0 active:scale-95",
                           "sm:min-w-[42px] min-w-[calc((100vw-2rem-1rem)/7)]",
-                          isSelected ? "bg-neutral-900 text-white shadow-sm" : isToday ? "bg-blue-50 border border-blue-200" : "bg-neutral-50 dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                          isSelected ? "bg-neutral-900 text-white shadow-sm" : isToday ? "bg-blue-50 border border-blue-200" : "bg-neutral-50 dark:bg-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                          isFuture && !isSelected && "opacity-40"
                         )}
                         style={{
                           backgroundColor: isSelected ? "#111111" : "#ffffff",
@@ -2613,6 +2667,10 @@ export default function SalesPerformancePage({ onBack }: Props) {
                   return items.map(item => {
                     const ss = getSellers(item);
                     const idxs = ss.map(s => SELLERS.indexOf(s));
+                    if (isFuturePeriod) {
+                      const prevSales = idxs.reduce((a, si) => a + sellerPeriodPrevSales(si, year, month, period, selectedDay), 0);
+                      return { id: item.id, name: item.name, regionName: undefined, areaName: undefined, supervisorName: undefined, showroomName: undefined, sales: 0, target: 0, prevSales, invoices: 0, pieces: 0, customers: 0, avgInvoice: 0, avgPiece: 0, nextLevel };
+                    }
                     const sales     = idxs.reduce((a, si) => a + sellerPeriodSales(si, year, month, period, selectedDay), 0);
                     const target    = idxs.reduce((a, si) => a + sellerPeriodTarget(si, year, month, period), 0);
                     const prevSales = idxs.reduce((a, si) => a + sellerPeriodPrevSales(si, year, month, period, selectedDay), 0);
@@ -2632,7 +2690,7 @@ export default function SalesPerformancePage({ onBack }: Props) {
                     const showroomName   = (nextLevel === "sellers")
                       ? SHOWROOMS.find(s => s.id === (rep as any)?.showroomId)?.name : undefined;
                     return { id: item.id, name: item.name, regionName, areaName, supervisorName, showroomName, sales, target, prevSales, invoices, pieces, customers, avgInvoice, avgPiece, nextLevel };
-                  }).filter(r => r.sales > 0 || r.target > 0);
+                  }).filter(r => isFuturePeriod || r.sales > 0 || r.target > 0);
                 }
 
                 const commonProps = {
